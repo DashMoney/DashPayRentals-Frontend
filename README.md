@@ -1,8 +1,8 @@
-# DashMoney Decentralized Frontend
+# DashPayRentals Frontend
 
-**This is a short description of how someone would operate a decentralized frontend.**
+**This is a short description of how someone would operate a Dash Platform Frontend.**
 
-1. Copy this github repository to your own github account. https://github.com/DashMoney/DashMoney-Decentralized-Frontend
+1. Copy this github repository to your own github account. https://github.com/DashMoney/DashPayRentals-Frontend
 2. Connect copied Github repository to hosting service (Vercel - I use Hobby-free edition).
 3. Add environment variables and domain name to hosting service.
    • See Below\*
@@ -12,16 +12,16 @@
 
 - VITE_FRONTEND_NAME = Rentals
 - VITE_MERCHANT_IDENTITY = (This is your Dash IdentityID)
-- VITE_BKGD = dark
+- VITE_BKGD = primary
 - VITE_NETWORK = testnet
 
 _Frontend Name is what will appear in the top of page navigation bar._
 
 _Merchant Identity can be found in your Account Login page under the Identity Controls_
 
-_Percent of Topup is represented as 0 - 10000 for 0% to 100.00% (i.e. 100 equals 1.00%)_
-
 _BKGD is 'Background' which can be dark or primary_
+
+\_NETWORK can be testnet or mainnet
 
 ### React + Vite (Everything else is from initial Vite setup)
 

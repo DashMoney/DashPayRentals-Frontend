@@ -35,11 +35,11 @@ class FrontEndExplaination extends React.Component {
             {closeButtonColor}
           </Modal.Header>
           <Modal.Body>
-            <h3 style={{ color: "#008de4" }}>
+            <h4 style={{ color: "#008de4" }}>
               What is this?
               {/*
               {import.meta.env.VITE_FRONTEND_NAME} */}
-            </h3>
+            </h4>
             <p>
               This website is a Dash Platform Frontend. Dash Platform is a layer
               2 Data Contract Engine (a queriable decentralized database) linked
@@ -50,16 +50,16 @@ class FrontEndExplaination extends React.Component {
               Dash's service node network (Core and Platform).
             </p>
 
-            <h3 style={{ color: "#008de4" }}>Can anyone use this frontend?</h3>
+            <h4 style={{ color: "#008de4" }}>Can anyone use this frontend?</h4>
             <p>
               Yes, you can visit{" "}
               <b>
                 <a
                   rel="noopener noreferrer"
                   target="_blank"
-                  href="https://github.com/DashMoney/DashMoney-Decentralized-Frontend"
+                  href="https://github.com/DashMoney/DashPayRentals-Frontend"
                 >
-                  https://github.com/DashMoney/DashMoney-Decentralized-Frontend
+                  https://github.com/DashMoney/DashPayRentals-Frontend
                 </a>{" "}
               </b>
               and find the source code, just follow the <b>README</b> to run the
