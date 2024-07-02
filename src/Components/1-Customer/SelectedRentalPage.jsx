@@ -332,50 +332,56 @@ class SelectedRentalPage extends React.Component {
             <>
               <h6 style={{ color: "#008de4" }}>Make a Reservation</h6>
               {/* Date FORM BELOW */}
-              <Form.Group
-                className="mb-3"
-                controlId="formArrival"
+              <Form
+                noValidate
+                //onSubmit={this.handleSubmitClick}
                 onChange={this.onChange}
               >
-                <h5 style={{ marginTop: ".2rem", marginBottom: ".2rem" }}>
-                  <b>Arrival Date</b>
-                </h5>
-                <Form.Control
-                  type="date"
-                  placeholder="Date of Arrival.."
-                  max={dateMaxForm}
-                  min={dateMinForm}
-                  //  isInvalid={this.state.tooLongDateError}
-                  //isValid={this.state.validDate}
-                />
+                <Form.Group
+                  className="mb-3"
+                  controlId="formArrival"
+                  // onChange={this.onChange}
+                >
+                  <h5 style={{ marginTop: ".2rem", marginBottom: ".2rem" }}>
+                    <b>Arrival Date</b>
+                  </h5>
+                  <Form.Control
+                    type="date"
+                    placeholder="Date of Arrival.."
+                    max={dateMaxForm}
+                    min={dateMinForm}
+                    //  isInvalid={this.state.tooLongDateError}
+                    //isValid={this.state.validDate}
+                  />
 
-                {/* <Form.Control.Feedback type="invalid">
+                  {/* <Form.Control.Feedback type="invalid">
                     Date info is too long.
                   </Form.Control.Feedback> */}
-              </Form.Group>
-              <p></p>
-              {/* Date FORM BELOW */}
-              <Form.Group
-                className="mb-3"
-                controlId="formDeparture"
-                onChange={this.onChange}
-              >
-                <h5 style={{ marginTop: ".2rem", marginBottom: ".2rem" }}>
-                  <b>Departure Date</b>
-                </h5>
-                <Form.Control
-                  type="date"
-                  placeholder="Date of Departure.."
-                  max={dateMaxForm}
-                  min={dateMinForm}
-                  //  isInvalid={this.state.tooLongDateError}
-                  //isValid={this.state.validDate}
-                />
+                </Form.Group>
+                <p></p>
+                {/* Date FORM BELOW */}
+                <Form.Group
+                  className="mb-3"
+                  controlId="formDeparture"
+                  // onChange={this.onChange}
+                >
+                  <h5 style={{ marginTop: ".2rem", marginBottom: ".2rem" }}>
+                    <b>Departure Date</b>
+                  </h5>
+                  <Form.Control
+                    type="date"
+                    placeholder="Date of Departure.."
+                    max={dateMaxForm}
+                    min={dateMinForm}
+                    //  isInvalid={this.state.tooLongDateError}
+                    //isValid={this.state.validDate}
+                  />
 
-                {/* <Form.Control.Feedback type="invalid">
+                  {/* <Form.Control.Feedback type="invalid">
                     Date info is too long.
                   </Form.Control.Feedback> */}
-              </Form.Group>
+                </Form.Group>
+              </Form>
               {!datesOrdered ? (
                 <>
                   {" "}

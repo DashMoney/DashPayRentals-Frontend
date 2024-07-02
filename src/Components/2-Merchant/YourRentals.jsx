@@ -24,7 +24,7 @@ class YourRentals extends React.Component {
             //uniqueName={this.props.uniqueName}
             handleSelectedRental={this.props.handleSelectedRental}
           />
-          <div className="BlackBottomBorder"></div>
+          
         </div>
       );
     });

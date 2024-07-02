@@ -17,7 +17,7 @@
 
 _Frontend Name is what will appear in the top of page navigation bar._
 
-_Merchant Identity can be found in your Account Login page under the Identity Controls_
+\_Merchant Identity can be found on your Account Login page
 
 _BKGD is 'Background' which can be dark or primary_
 

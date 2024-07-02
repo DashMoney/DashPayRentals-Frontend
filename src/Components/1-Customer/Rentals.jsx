@@ -27,7 +27,7 @@ class Rentals extends React.Component {
 
             handleSelectedRental={this.props.handleSelectedRental}
           />
-          <div className="BlackBottomBorder"></div>
+         
         </div>
       );
     });

@@ -723,42 +723,48 @@ class Calender extends React.Component {
           </>
         ) : (
           <>
-            {/* Date FORM BELOW */}
-            <Form.Group
-              className="mb-3"
-              controlId="formReqDate"
+            <Form
+              noValidate
+              //onSubmit={this.handleSubmitClick}
               onChange={this.onChange}
             >
-              <h5 style={{ marginTop: ".2rem", marginBottom: ".2rem" }}>
-                <b>Select Date</b>
-              </h5>
+              {/* Date FORM BELOW */}
+              <Form.Group
+                className="mb-3"
+                controlId="formReqDate"
+                // onChange={this.onChange}
+              >
+                <h5 style={{ marginTop: ".2rem", marginBottom: ".2rem" }}>
+                  <b>Select Date</b>
+                </h5>
 
-              {this.state.LoadingConfirms ? (
-                <>
-                  <p></p>
-                  <div id="spinner">
-                    <Spinner animation="border" role="status">
-                      <span className="visually-hidden">Loading...</span>
-                    </Spinner>
-                  </div>
-                  <p></p>
-                </>
-              ) : (
-                <></>
-              )}
-              <Form.Control
-                type="date"
-                placeholder="Enter date to view availability"
-                max={this.props.dateMaxForm}
-                min={this.props.dateMinForm}
-                //  isInvalid={this.state.tooLongDateError}
-                //isValid={this.state.validDate}
-              />
+                {this.state.LoadingConfirms ? (
+                  <>
+                    <p></p>
+                    <div id="spinner">
+                      <Spinner animation="border" role="status">
+                        <span className="visually-hidden">Loading...</span>
+                      </Spinner>
+                    </div>
+                    <p></p>
+                  </>
+                ) : (
+                  <></>
+                )}
+                <Form.Control
+                  type="date"
+                  placeholder="Enter date to view availability"
+                  max={this.props.dateMaxForm}
+                  min={this.props.dateMinForm}
+                  //  isInvalid={this.state.tooLongDateError}
+                  //isValid={this.state.validDate}
+                />
 
-              {/* <Form.Control.Feedback type="invalid">
+                {/* <Form.Control.Feedback type="invalid">
                     Date info is too long.
                   </Form.Control.Feedback> */}
-            </Form.Group>
+              </Form.Group>
+            </Form>
             <p></p>
           </>
         )}
