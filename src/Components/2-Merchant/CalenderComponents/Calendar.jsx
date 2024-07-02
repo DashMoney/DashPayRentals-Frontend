@@ -732,28 +732,16 @@ class Calender extends React.Component {
               <Form.Group
                 className="mb-3"
                 controlId="formReqDate"
+
                 // onChange={this.onChange}
               >
                 <h5 style={{ marginTop: ".2rem", marginBottom: ".2rem" }}>
                   <b>Select Date</b>
                 </h5>
 
-                {this.state.LoadingConfirms ? (
-                  <>
-                    <p></p>
-                    <div id="spinner">
-                      <Spinner animation="border" role="status">
-                        <span className="visually-hidden">Loading...</span>
-                      </Spinner>
-                    </div>
-                    <p></p>
-                  </>
-                ) : (
-                  <></>
-                )}
                 <Form.Control
                   type="date"
-                  placeholder="Enter date to view availability"
+                  required
                   max={this.props.dateMaxForm}
                   min={this.props.dateMinForm}
                   //  isInvalid={this.state.tooLongDateError}

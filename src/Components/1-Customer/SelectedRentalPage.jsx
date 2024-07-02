@@ -370,7 +370,7 @@ class SelectedRentalPage extends React.Component {
                   </h5>
                   <Form.Control
                     type="date"
-                    placeholder="Date of Departure.."
+                    required
                     max={dateMaxForm}
                     min={dateMinForm}
                     //  isInvalid={this.state.tooLongDateError}
