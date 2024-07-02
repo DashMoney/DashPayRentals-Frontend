@@ -12,7 +12,7 @@ class YourRentals extends React.Component {
     let rentals = this.props.Rentals.map((rental, index) => {
       //console.log(post);
       return (
-        <div key={index}>
+        <div key={index} style={{ marginBottom: "0.1rem" }}>
           <YourRental
             // key={index}
             mode={this.props.mode}
@@ -24,7 +24,6 @@ class YourRentals extends React.Component {
             //uniqueName={this.props.uniqueName}
             handleSelectedRental={this.props.handleSelectedRental}
           />
-          
         </div>
       );
     });

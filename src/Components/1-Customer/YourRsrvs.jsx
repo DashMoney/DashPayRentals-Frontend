@@ -12,7 +12,7 @@ class YourRsrvs extends React.Component {
     let requests = this.props.RentalRequests.map((request, index) => {
       //console.log(post);
       return (
-        <div key={index}>
+        <div key={index} style={{ marginBottom: "0.1rem" }}>
           <YourRsrv
             //key={index}
             mode={this.props.mode}
@@ -32,7 +32,6 @@ class YourRsrvs extends React.Component {
             RentalRequests={this.props.RentalRequests}
             RentalConfirms={this.props.RentalConfirms}
           />
-          <div className="BlackBottomBorder"></div>
         </div>
       );
     });

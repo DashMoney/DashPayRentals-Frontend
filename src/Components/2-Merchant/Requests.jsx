@@ -39,7 +39,7 @@ class Requests extends React.Component {
     let requests = this.props.RentalRequests.map((request, index) => {
       //console.log(post);
       return (
-        <div key={index}>
+        <div key={index} style={{ marginBottom: "0.1rem" }}>
           <Request
             //key={index}
             mode={this.props.mode}
@@ -60,7 +60,6 @@ class Requests extends React.Component {
             RentalRequests={this.props.RentalRequests}
             RentalConfirms={this.props.RentalConfirms}
           />
-          <div className="BlackBottomBorder"></div>
         </div>
       );
     });
@@ -68,7 +67,7 @@ class Requests extends React.Component {
     let confirms = this.props.RentalConfirms.map((request, index) => {
       //console.log(post);
       return (
-        <div key={index}>
+        <div key={index} style={{ marginBottom: "0.1rem" }}>
           <Confirm
             //key={index}
             mode={this.props.mode}

@@ -2,6 +2,8 @@ import React from "react";
 
 import Table from "react-bootstrap/Table";
 import Spinner from "react-bootstrap/Spinner";
+
+import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 
 import Dash from "dash";
@@ -15,9 +17,9 @@ class Calender extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      reqTimeDate: [], //[year, month, day],
+      reqDateArr: [], //[year, month, day],
       reqDateInput: Date.now(), //Have to set to sundayStart
-      validReqTime: true,
+      validReqDate: false,
       //
       Confirm1: false,
       Confirm2: false,
@@ -91,8 +93,8 @@ class Calender extends React.Component {
   handleDateCalc = () => {
     let dateArr = [];
 
-    if (this.state.reqTimeDate.length === 3) {
-      dateArr = [...this.state.reqTimeDate]; // [year, month, day],
+    if (this.state.reqDateArr.length === 3) {
+      dateArr = [...this.state.reqDateArr]; // [year, month, day],
       //console.log(dateArr);
       //  console.log(d);
       // console.log(d.getTime()); //.getTime() just w/o milliseconds
@@ -123,7 +125,7 @@ class Calender extends React.Component {
       this.setState(
         {
           reqDateInput: startingSunday, // DO i NEED THIS SETsTATE??
-          validReqTime: true,
+          validReqDate: true,
           priorConfirm: [],
           subsequentConfirms: [],
 
@@ -136,7 +138,7 @@ class Calender extends React.Component {
       console.log("No date avail..");
       this.setState({
         reqDateInput: "",
-        validReqTime: false,
+        validReqDate: false,
         LoadingConfirms: false,
       });
     }
@@ -147,7 +149,7 @@ class Calender extends React.Component {
     event.stopPropagation();
 
     if (event.target.id === "formReqDate") {
-      // console.log(event.target.value);
+      console.log(event.target.value);
       this.reqDateParse(event.target.value);
     }
   };
@@ -162,10 +164,10 @@ class Calender extends React.Component {
     // console.log(month);
     this.setState(
       {
-        reqTimeDate: [year, month, day],
-        LoadingConfirms: true,
-      },
-      () => this.handleDateCalc()
+        reqDateArr: [year, month, day],
+        validReqDate: true,
+        // LoadingConfirms: true,
+      } //,() => this.handleDateCalc()
     );
   };
 
@@ -241,7 +243,7 @@ class Calender extends React.Component {
     getDocuments()
       .then((d) => {
         if (d.length === 0) {
-          console.log("There are no Confirm");
+          // console.log("There are no Confirm");
 
           this.setState(
             {
@@ -528,6 +530,16 @@ class Calender extends React.Component {
     //how to get the [0-34]
   };
 
+  onSubmitClick = (event) => {
+    event.preventDefault();
+    this.setState(
+      {
+        LoadingConfirms: true,
+      },
+      () => this.handleDateCalc()
+    );
+  };
+
   // THE FLOW - Initial
   /*
   1) componentDidMount -> new Date() -> SundayInitial
@@ -725,7 +737,7 @@ class Calender extends React.Component {
           <>
             <Form
               noValidate
-              //onSubmit={this.handleSubmitClick}
+              onSubmit={this.onSubmitClick}
               onChange={this.onChange}
             >
               {/* Date FORM BELOW */}
@@ -752,8 +764,20 @@ class Calender extends React.Component {
                     Date info is too long.
                   </Form.Control.Feedback> */}
               </Form.Group>
+              <p></p>
+              <div className="d-grid gap-2">
+                {this.state.validReqDate ? (
+                  <Button size="lg" variant="primary" type="submit">
+                    <b>View Schedule</b>
+                  </Button>
+                ) : (
+                  <Button size="lg" variant="primary" disabled>
+                    <b>View Schedule</b>
+                  </Button>
+                )}
+              </div>
+              <p></p>
             </Form>
-            <p></p>
           </>
         )}
 
