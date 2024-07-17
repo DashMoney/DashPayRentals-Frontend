@@ -8,7 +8,7 @@ import handleDenomDisplay from "../UnitDisplay";
 import formatDate from "../TimeDisplayLong";
 import simpleDate from "../DateDisplay";
 
-class Request extends React.Component {
+class BlockedOff extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -29,11 +29,9 @@ class Request extends React.Component {
       cardText = "white";
     }
 
-    // "Requests"
-    // "Confirmed"
-    // "Blocked Off"
-    if (this.props.DisplayRequests === "Blocked Off") {
-    }
+    let rental = this.props.Rentals.find((rental) => {
+      return rental.$id === this.props.confirmBlock.rentalId;
+    });
 
     return (
       <>
@@ -50,7 +48,7 @@ class Request extends React.Component {
 
               <span className="textsmaller">
                 {formatDate(
-                  this.props.request.$updatedAt,
+                  this.props.confirmBlock.$updatedAt,
                   this.props.today,
                   this.props.yesterday
                 )}
@@ -111,7 +109,7 @@ class Request extends React.Component {
             </p>
 
             <h5 style={{ textAlign: "center" }}>
-              <b> {simpleDate(this.props.request.arriveDate)}</b>{" "}
+              <b> {simpleDate(this.props.confirmBlock.arriveDate)}</b>{" "}
             </h5>
 
             {/* DepartDate*/}
@@ -126,7 +124,7 @@ class Request extends React.Component {
             </p>
 
             <h5 style={{ textAlign: "center" }}>
-              <b> {simpleDate(this.props.request.departDate)}</b>{" "}
+              <b> {simpleDate(this.props.confirmBlock.departDate)}</b>{" "}
             </h5>
 
             <p></p>
@@ -148,4 +146,4 @@ class Request extends React.Component {
   }
 }
 
-export default Request;
+export default BlockedOff;

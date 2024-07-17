@@ -25,6 +25,7 @@ import YourRsrvsPage from "./Components/1-Customer/YourRsrvsPage";
 import CreateRental from "./Components/2-Merchant/CreateRental";
 import YourSelectedRental from "./Components/2-Merchant/YourSelectedRental";
 
+import ConfirmRequestModal from "./Components/2-Merchant/MerchantModals/ConfirmRequestModal";
 import BlockConfirmModal from "./Components/2-Merchant/MerchantModals/BlockConfirmModal";
 import MakeRequestModal from "./Components/1-Customer/CustomerModals/MakeRequestModal";
 
@@ -35,6 +36,7 @@ import CreateNewWalletModal from "./Components/0-LoginPage/CreateNewWalletModal"
 import RegisterIdentityModal from "./Components/0-LoginPage/RegisterIdentityModal";
 
 import RegisterNameModal from "./Components/0-LoginPage/RegisterNameModal";
+import WalletTXModal from "./Components/WalletTXModal";
 
 import SendFundsModal from "./Components/0-LoginPage/SendFundsModal";
 import LogoutModal from "./Components/0-LoginPage/LogoutModal";
@@ -74,7 +76,7 @@ class App extends React.Component {
 
       presentModal: "",
       isModalShowing: false,
-      whichNetwork: "testnet",
+      whichNetwork: import.meta.env.VITE_NETWORK,
 
       mnemonic: "",
 
@@ -98,6 +100,8 @@ class App extends React.Component {
       isLoadingRequests: true,
 
       SelectedRental: "", // should be the rental document
+
+      selectedRequest: "",
 
       selectedArriveDate: "",
       selectedDepartureDate: "",
@@ -333,6 +337,13 @@ class App extends React.Component {
       });
     //****************************** */
 
+    //NEED TO SET TESTNET OR MAINNET FOR THE DATA CONTRACTS HERE AND THEN CALL THE getRentals()
+    //
+    //WHAT ABOUT THE KEYS WELL THE WALLETS ARE DIFFERENT SO SHOULD NOT INTERFER..
+    //
+    //ALSO WHAT ABOUT GETTING THE OWNER NAME ? -> yeah
+    //  -> based on MerchantId ->
+
     //
     this.getRentals();
     //
@@ -471,14 +482,6 @@ class App extends React.Component {
     this.getWalletPlatformLogin(theMnemonic);
     //this.getAliasfromIdentity(theIdentity);
     //
-    //  ----   ----   ----   ----   ----    ----   ----
-    //
-
-    //this.startMessagesQuerySeq(theIdentity);
-    // DGM msgs(to&from) && //DGM AddressesFromWallet!
-    //CHANGE THIS TO GET INITIAL RENTALS ->
-    //this.getRentals();
-    //this.handleLoginQueries_WALLET(theIdentity);
   };
 
   handleAccountRetry = () => {
@@ -627,10 +630,8 @@ class App extends React.Component {
               identity: d[0],
               isLoadingIdentity: false,
               isLoadingWallet: false,
-            } //,() => this.getAddresses_WALLET()
-            ///
-            //  CALL -> this.getAddresses_WALLET();
-            // BC REQUIRES -> this.state.accountHistory
+            },
+            () => this.LOGINCOMPLETEQueryTrigger(d[0])
           );
         }
       })
@@ -778,18 +779,18 @@ class App extends React.Component {
       })
       .finally(() => client.disconnect());
   };
-
+  //
+  //FROM HANDLENAME() AND  getNamefromIdentity() AND getWalletPlatformLogin()
+  // SO  NEW ACCOUNT  AND  NEW LOGIN             AND LOCALFORAGE
+  //
   LOGINCOMPLETEQueryTrigger = (theIdentity) => {
-    //After(Identity/Name) -> trigger added to 2 Functions ABOVE
-    // ForYou(Messages)
-    //  this.startMessagesQuerySeq(theIdentity);
-    // DGM msgs(to&from) && //DGM AddressesFromWallet!
-    // this.handleLoginQueries_WALLET(theIdentity);
-    //this.getRentals();
-    //
+    if (theIdentity === this.state.MerchantId) {
+      this.startMerchantRace();
+    } else {
+      this.getYourRsrvs(theIdentity);
+    }
+
     //if(this.state.platformLogin){}
-    // this.getAddresses_WALLET(); //REQUIRES -> this.state.accountHistory
-    // NEED TO CALL ^^^ AFTER THE WALLET IS PULLED <=
   };
 
   // ####  ####  WRITE ACTIONS BELOW  #### ####
@@ -1356,13 +1357,13 @@ class App extends React.Component {
    */
   //This needs a race query! Requests, Confirms and replies
 
-  pullInitialTriggerMERCHANT = () => {
-    this.startMerchantRace();
-    //THIS IS FOR WHEN YOU LOGIN AND GET Merchant Queries
-    this.setState({
-      InitialPullMerchant: false,
-    });
-  };
+  // pullInitialTriggerMERCHANT = () => {
+  //   this.startMerchantRace();
+  //   //THIS IS FOR WHEN YOU LOGIN AND GET Merchant Queries
+  //   this.setState({
+  //     InitialPullMerchant: false,
+  //   });
+  // };
 
   startMerchantRace = () => {
     if (!this.state.isLoadingRequests) {
@@ -1407,7 +1408,10 @@ class App extends React.Component {
           ["rentalId", "in", arrayOfRentalIds],
           ["$createdAt", "<=", Date.now()],
         ],
-        orderBy: [["$createdAt", "desc"]],
+        orderBy: [
+          ["rentalId", "asc"],
+          ["$createdAt", "desc"],
+        ],
       });
     };
 
@@ -1434,7 +1438,7 @@ class App extends React.Component {
               returnedDoc.rentalId,
               "base64"
             ).toJSON();
-            console.log("newRequest:\n", returnedDoc);
+            //  console.log("newRequest:\n", returnedDoc);
             docArray = [...docArray, returnedDoc];
           }
           //this.getYourRsrvsConfirms(docArray);
@@ -1472,10 +1476,14 @@ class App extends React.Component {
 
       return client.platform.documents.get("RENTALSContract.confirm", {
         where: [
+          ["$ownerId", "==", this.state.MerchantId],
           ["rentalId", "in", arrayOfRentalIds],
           ["$createdAt", "<=", Date.now()],
         ],
-        orderBy: [["$createdAt", "desc"]],
+        orderBy: [
+          ["rentalId", "asc"],
+          ["$createdAt", "desc"],
+        ],
       });
     };
 
@@ -1503,7 +1511,11 @@ class App extends React.Component {
               returnedDoc.reqId,
               "base64"
             ).toJSON();
-            //console.log("newConfirm:\n", returnedDoc);
+            returnedDoc.rentalId = Identifier.from(
+              returnedDoc.rentalId,
+              "base64"
+            ).toJSON();
+            // console.log("newConfirm:\n", returnedDoc);
             docArray = [...docArray, returnedDoc];
           }
 
@@ -1548,7 +1560,10 @@ class App extends React.Component {
           ["confirmId", "in", arrayOfConfirmIds],
           ["$createdAt", "<=", Date.now()],
         ],
-        orderBy: [["$createdAt", "desc"]],
+        orderBy: [
+          ["confirmId", "asc"],
+          ["$createdAt", "desc"],
+        ],
       });
     };
 
@@ -1596,6 +1611,21 @@ class App extends React.Component {
       .finally(() => client.disconnect());
   };
 
+  handleConfirmRequestModal = (theRequest) => {
+    //HAVE TO DETERMINE THE RENTAL of request ->
+    let requestRental = this.state.Rentals.find((rental) => {
+      return rental.$id === theRequest.rentalId;
+    });
+
+    this.setState(
+      {
+        selectedRequest: theRequest,
+        SelectedRental: requestRental,
+      },
+      () => this.showModal("ConfirmRequestModal")
+    );
+  };
+
   handleBlockConfirmModal = (theStartDate, theEndDate) => {
     this.setState(
       {
@@ -1606,117 +1636,108 @@ class App extends React.Component {
     );
   };
 
-  //createConfirm
-  createRentalConfirm = (arrDate, depDate) =>
-    //rideReplyObject
-    {
-      console.log("Called Create Rental Confirm");
-      this.hideModal();
+  createConfirmRequest = () => {
+    // console.log("Called Create Confirm Request");
 
-      this.setState({
-        isLoadingYourDrives: true,
-        isLoadingDriversSearch: true,
-      });
+    this.setState({
+      isLoadingRequests: true,
+      isLoadingRentals: true,
+      selectedDapp: "Rentals",
+    });
 
-      const clientOpts = {
-        network: this.state.whichNetwork,
-        wallet: {
-          mnemonic: this.state.mnemonic,
-          adapter: LocalForage.createInstance,
-          unsafeOptions: {
-            skipSynchronizationBeforeHeight:
-              this.state.skipSynchronizationBeforeHeight,
-          },
+    const clientOpts = {
+      network: this.state.whichNetwork,
+      wallet: {
+        mnemonic: this.state.mnemonic,
+        adapter: LocalForage.createInstance,
+        unsafeOptions: {
+          skipSynchronizationBeforeHeight:
+            this.state.skipSynchronizationBeforeHeight,
         },
-        apps: {
-          RADContract: {
-            contractId: this.state.DataContractRAD,
-          },
+      },
+      apps: {
+        RENTALSContract: {
+          contractId: this.state.DataContractRENTALS,
         },
-      };
-      const client = new Dash.Client(clientOpts);
-
-      const submitReviewDoc = async () => {
-        const { platform } = client;
-
-        let identity = "";
-        if (this.state.identityRaw !== "") {
-          identity = this.state.identityRaw;
-        } else {
-          identity = await platform.identities.get(this.state.identity);
-        }
-
-        const replyProperties = {
-          amt: this.state.selectedSearchedDrive.amt,
-          //toId
-          reqId: this.state.selectedSearchedDrive.$id,
-          //msg:
-        };
-        //console.log('Reply to Create: ', replyProperties);
-
-        // Create the note document
-        const radDocument = await platform.documents.create(
-          "RADContract.rideReply",
-          identity,
-          replyProperties
-        );
-
-        //############################################################
-        //This below disconnects the document sending..***
-
-        //return radDocument;
-
-        //This is to disconnect the Document Creation***
-        //############################################################
-
-        const documentBatch = {
-          create: [radDocument], // Document(s) to create
-        };
-
-        await platform.documents.broadcast(documentBatch, identity);
-        return radDocument;
-      };
-
-      submitReviewDoc()
-        .then((d) => {
-          let returnedDoc = d.toJSON();
-          console.log("Document:\n", returnedDoc);
-
-          let rideReply = {
-            $ownerId: returnedDoc.$ownerId,
-            $id: returnedDoc.$id,
-            $createdAt: returnedDoc.$createdAt,
-            //amt: this.state.selectedSearchedDrive.amt,
-            //toId
-            reqId: this.state.selectedSearchedDrive.$id,
-            //msg:
-          };
-
-          this.setState(
-            {
-              YourDrives: [rideReply, ...this.state.YourDrives],
-              YourDrivesRequests: [
-                this.state.selectedSearchedDrive,
-                ...this.state.YourDrivesRequests,
-              ],
-              YourDrivesRequestsNames: [
-                this.state.selectedSearchedDriveNameDoc,
-                ...this.state.YourDrivesRequestsNames,
-              ],
-              isLoadingYourDrives: false,
-              isLoadingDriversSearch: false,
-            },
-            () => this.loadIdentityCredits()
-          );
-        })
-        .catch((e) => {
-          console.error(
-            "Something went wrong with Accept Drive Ride Reply creation:\n",
-            e
-          );
-        })
-        .finally(() => client.disconnect());
+      },
     };
+    const client = new Dash.Client(clientOpts);
+
+    const submitReviewDoc = async () => {
+      const { platform } = client;
+
+      let identity = "";
+      if (this.state.identityRaw !== "") {
+        identity = this.state.identityRaw;
+      } else {
+        identity = await platform.identities.get(this.state.identity);
+      }
+
+      const confirmProperties = {
+        arriveDate: this.state.selectedRequest.arriveDate,
+        departDate: this.state.selectedRequest.departDate,
+        rentalId: this.state.SelectedRental.$id,
+        reqId: this.state.selectedRequest.$id,
+        //toId
+        amt: this.state.selectedRequest.amt,
+        // pmtObj
+      };
+      //console.log(' Create: ', confirmProperties);
+
+      // Create the note document
+      const rentalDocument = await platform.documents.create(
+        "RENTALSContract.confirm",
+        identity,
+        confirmProperties
+      );
+
+      //############################################################
+      //This below disconnects the document sending..***
+
+      //return rentalDocument;
+
+      //This is to disconnect the Document Creation***
+      //############################################################
+
+      const documentBatch = {
+        create: [rentalDocument], // Document(s) to create
+      };
+
+      await platform.documents.broadcast(documentBatch, identity);
+      return rentalDocument;
+    };
+
+    submitReviewDoc()
+      .then((d) => {
+        let returnedDoc = d.toJSON();
+
+        returnedDoc.rentalId = Identifier.from(
+          returnedDoc.rentalId,
+          "base64"
+        ).toJSON();
+
+        returnedDoc.reqId = Identifier.from(
+          returnedDoc.reqId,
+          "base64"
+        ).toJSON();
+
+        console.log("Request Confirm:\n", returnedDoc);
+
+        this.setState(
+          {
+            RentalConfirms: [returnedDoc, ...this.state.RentalConfirms],
+
+            isLoadingRequests: false,
+            isLoadingRentals: false,
+          },
+          () => this.loadIdentityCredits()
+        );
+      })
+      .catch((e) => {
+        console.error("Something went wrong with Block Confirm creation:\n", e);
+      })
+      .finally(() => client.disconnect());
+  };
 
   createBlockConfirm = () => {
     // console.log("Called Create Block Confirm");
@@ -2064,13 +2085,13 @@ class App extends React.Component {
       .finally(() => client.disconnect());
   };
 
-  pullInitialTriggerCUSTOMER = () => {
-    this.getYourRsrvs(this.state.identity);
-    //THIS IS FOR WHEN YOU LOGIN AND GET YOUR DRIVES
-    this.setState({
-      InitialPullCustomer: false,
-    });
-  };
+  // pullInitialTriggerCUSTOMER = () => {
+  //   this.getYourRsrvs(this.state.identity);
+  //   //THIS IS FOR WHEN YOU LOGIN AND GET YOUR DRIVES
+  //   this.setState({
+  //     InitialPullCustomer: false,
+  //   });
+  // };
 
   // pullOnPageLoadTriggerDRIVERS = () => {
   //   //THIS IS FOR WHEN YOU SELECT THE DAPP, IT LOADS MOST RECENT RIDES POSTED
@@ -2137,7 +2158,7 @@ class App extends React.Component {
               returnedDoc.rentalId,
               "base64"
             ).toJSON();
-            console.log("newRequest:\n", returnedDoc);
+            // console.log("newRequest:\n", returnedDoc);
             docArray = [...docArray, returnedDoc];
           }
           this.getYourRsrvsConfirms(docArray);
@@ -2206,7 +2227,7 @@ class App extends React.Component {
               returnedDoc.rentalId,
               "base64"
             ).toJSON();
-            //console.log("newConfirm:\n", returnedDoc);
+            console.log("newConfirm:\n", returnedDoc);
             docArray = [...docArray, returnedDoc];
           }
           this.getYourRsrvsReplies(docArray, theDocArray);
@@ -2250,7 +2271,10 @@ class App extends React.Component {
           ["confirmId", "in", arrayOfConfirmIds],
           ["$createdAt", "<=", Date.now()],
         ],
-        orderBy: [["$createdAt", "desc"]],
+        orderBy: [
+          ["confirmId", "asc"],
+          ["$createdAt", "desc"],
+        ],
       });
     };
 
@@ -2444,7 +2468,10 @@ class App extends React.Component {
 
     let loggedInAs = "customer"; // 'merchant'
 
-    if (import.meta.env.VITE_MERCHANT_IDENTITY === this.state.identity) {
+    if (
+      import.meta.env.VITE_MERCHANT_IDENTITY === this.state.identity &&
+      isLoginComplete
+    ) {
       // if (true) {
       loggedInAs = "merchant";
     }
@@ -2544,16 +2571,20 @@ class App extends React.Component {
                     <>
                       <RequestsPage
                         isLoginComplete={isLoginComplete}
+                        isLoadingRentals={this.state.isLoadingRentals}
                         isLoadingRequests={this.state.isLoadingRequests}
                         Rentals={this.state.Rentals}
                         RentalRequests={this.state.RentalRequests}
                         RentalConfirms={this.state.RentalConfirms}
                         handleSelectedRental={this.handleSelectedRental}
-                        //
-                        pullInitialTriggerMERCHANT={
-                          this.pullInitialTriggerMERCHANT
+                        handleConfirmRequestModal={
+                          this.handleConfirmRequestModal
                         }
-                        InitialPullMerchant={this.state.InitialPullMerchant}
+                        //
+                        // pullInitialTriggerMERCHANT={
+                        //   this.pullInitialTriggerMERCHANT
+                        // }
+                        // InitialPullMerchant={this.state.InitialPullMerchant}
                         identity={this.state.identity}
                         identityInfo={this.state.identityInfo}
                         uniqueName={this.state.uniqueName}
@@ -2691,10 +2722,10 @@ class App extends React.Component {
                     <>
                       <YourRsrvsPage
                         isLoginComplete={isLoginComplete}
-                        pullInitialTriggerCUSTOMER={
-                          this.pullInitialTriggerCUSTOMER
-                        }
-                        InitialPullCustomer={this.state.InitialPullCustomer}
+                        // pullInitialTriggerCUSTOMER={
+                        //   this.pullInitialTriggerCUSTOMER
+                        // }
+                        // InitialPullCustomer={this.state.InitialPullCustomer}
                         isLoadingRentals={this.state.isLoadingRentals}
                         isLoadingRequests={this.state.isLoadingRequests}
                         Rentals={this.state.Rentals}
@@ -2870,6 +2901,23 @@ class App extends React.Component {
             StartDate={this.state.selectedArriveDate}
             EndDate={this.state.selectedDepartureDate}
             createRequest={this.createRequest}
+            isModalShowing={this.state.isModalShowing}
+            hideModal={this.hideModal}
+            mode={this.state.mode}
+          />
+        ) : (
+          <></>
+        )}
+
+        {this.state.isModalShowing &&
+        this.state.presentModal === "ConfirmRequestModal" ? (
+          <ConfirmRequestModal
+            DataContractRENTALS={this.state.DataContractRENTALS}
+            whichNetwork={this.state.whichNetwork}
+            MerchantId={this.state.MerchantId}
+            SelectedRental={this.state.SelectedRental}
+            request={this.state.selectedRequest}
+            createConfirmRequest={this.createConfirmRequest}
             isModalShowing={this.state.isModalShowing}
             hideModal={this.hideModal}
             mode={this.state.mode}

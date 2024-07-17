@@ -80,6 +80,11 @@ class Request extends React.Component {
 
     let confirm = undefined;
 
+    if (this.props.DisplayRequests === "Confirmed")
+      confirm = this.props.RentalConfirms.find((confirm) => {
+        return this.props.request.$id === confirm.reqId;
+      });
+
     //
     //let replies =
     // let replie names??
@@ -268,14 +273,16 @@ class Request extends React.Component {
             <p></p>
             {confirm === undefined && !this.props.isLoadingRequests ? (
               <>
-                <Button
-                  variant="primary"
-                  // onClick={() =>
-                  //   this.props.handleAcceptDrive(this.props.ride, nameDocToPass)
-                  // }
-                >
-                  <b>Confirm Reservation</b>
-                </Button>
+                <div className="d-grid gap-2">
+                  <Button
+                    variant="primary"
+                    onClick={() =>
+                      this.props.handleConfirmRequestModal(this.props.request)
+                    }
+                  >
+                    <b>Confirm Reservation</b>
+                  </Button>
+                </div>
               </>
             ) : (
               <></>
@@ -305,52 +312,54 @@ class Request extends React.Component {
               <></>
             )} */}
 
-            <div
-              className="BottomBorder"
-              style={{ paddingTop: ".7rem", marginBottom: ".7rem" }}
-            ></div>
-            <div
-              className="cardTitle"
-              style={{ marginTop: ".4rem", marginBottom: ".5rem" }}
-            >
-              <h5>Responses</h5>
-              {this.verifyRequestStatus(this.props.request, confirm)}
-            </div>
-
-            {this.props.isYourRequestsRefreshReady ? (
-              <div className="d-grid gap-2" id="button-edge-noTop">
-                <Button
-                  variant="primary"
-                  // onClick={() => {
-                  //   this.props.refreshYourRides();
-                  // }}
-                  style={{
-                    fontSize: "larger",
-                    paddingLeft: "1rem",
-                    paddingRight: "1rem",
-                  }}
-                >
-                  <b>Refresh</b>
-                </Button>
-              </div>
-            ) : (
+            {confirm !== undefined ? (
               <>
-                <div className="d-grid gap-2" id="button-edge-noTop">
-                  <Button
-                    variant="primary"
-                    disabled
-                    style={{
-                      fontSize: "larger",
-                      paddingLeft: "1rem",
-                      paddingRight: "1rem",
-                    }}
-                  >
-                    <b>Refresh</b>
-                  </Button>
+                <div
+                  className="BottomBorder"
+                  style={{ paddingTop: ".7rem", marginBottom: ".7rem" }}
+                ></div>
+                <div
+                  className="cardTitle"
+                  style={{ marginTop: ".4rem", marginBottom: ".5rem" }}
+                >
+                  <h5>Responses</h5>
+                  {this.verifyRequestStatus(this.props.request, confirm)}
                 </div>
-              </>
-            )}
-            {/* 
+
+                {this.props.isYourRequestsRefreshReady ? (
+                  <div className="d-grid gap-2" id="button-edge-noTop">
+                    <Button
+                      variant="primary"
+                      // onClick={() => {
+                      //   this.props.refreshYourRides();
+                      // }}
+                      style={{
+                        fontSize: "larger",
+                        paddingLeft: "1rem",
+                        paddingRight: "1rem",
+                      }}
+                    >
+                      <b>Refresh</b>
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="d-grid gap-2" id="button-edge-noTop">
+                      <Button
+                        variant="primary"
+                        disabled
+                        style={{
+                          fontSize: "larger",
+                          paddingLeft: "1rem",
+                          paddingRight: "1rem",
+                        }}
+                      >
+                        <b>Refresh</b>
+                      </Button>
+                    </div>
+                  </>
+                )}
+                {/* 
             {confirmedDrive !== undefined ? (
               <>
                 <h5>
@@ -410,6 +419,10 @@ class Request extends React.Component {
             ) : (
               <></>
             )} */}
+              </>
+            ) : (
+              <></>
+            )}
           </Card.Body>
         </Card>
       </>

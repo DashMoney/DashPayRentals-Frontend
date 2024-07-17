@@ -9,11 +9,11 @@ import handleDenomDisplay from "../UnitDisplay";
 import Requests from "./Requests";
 
 class RequestsPage extends React.Component {
-  componentDidMount() {
-    if (this.props.isLoginComplete && this.props.InitialPullMerchant) {
-      this.props.pullInitialTriggerMERCHANT();
-    }
-  }
+  // componentDidMount() {
+  //   if (this.props.isLoginComplete && this.props.InitialPullMerchant) {
+  //     this.props.pullInitialTriggerMERCHANT();
+  //   }
+  // }
 
   render() {
     return (
@@ -56,27 +56,8 @@ class RequestsPage extends React.Component {
               </>
             )}
           </div>
-          <p></p>
-          <div className="d-grid gap-2">
-            {this.props.isLoadingRentals ? (
-              <>
-                <Button variant="primary" disabled>
-                  <b style={{ fontSize: "larger" }}>Create Rental</b>
-                </Button>
-              </>
-            ) : (
-              <>
-                <Button
-                  variant="primary"
-                  // onClick={() => this.props.showModal("CreateRideModal")}
-                  onClick={() => this.props.handleSelectedDapp("Create Rental")}
-                >
-                  <b style={{ fontSize: "larger" }}>Create Rental</b>
-                </Button>
-              </>
-            )}
-          </div>
-          {this.props.isLoadingRentals ? (
+
+          {this.props.isLoadingRentals || this.props.isLoadingRequests ? (
             <>
               <p></p>
               <div id="spinner">
@@ -89,30 +70,35 @@ class RequestsPage extends React.Component {
           ) : (
             <></>
           )}
-          {/* <p></p>
-          <Calender mode={this.props.mode} /> */}
-          <p></p>
-          <Requests
-            Rentals={this.props.Rentals}
-            RentalRequests={this.props.RentalRequests}
-            RentalConfirms={this.props.RentalConfirms}
-            //
-            handleSelectedRental={this.handleSelectedRental}
-            //
-            identity={this.props.identity}
-            uniqueName={this.props.uniqueName}
-            handleConfirmYourDriverModal={
-              this.props.handleConfirmYourDriverModal
-            }
-            isLoadingWallet={this.props.isLoadingWallet}
-            accountHistory={this.props.accountHistory}
-            mode={this.props.mode}
-            //
-            isLoadingRequests={this.props.isLoadingRequests}
-            isRequestsRefreshReady={this.props.isRequestsRefreshReady}
-            refreshRequests={this.props.refreshRequests}
-            //handleYourRentalMsgModalShow={this.props.handleYourRentalMsgModalShow}
-          />
+          {this.props.isLoadingRequests ? (
+            <></>
+          ) : (
+            <>
+              <p></p>
+              <Requests
+                Rentals={this.props.Rentals}
+                RentalRequests={this.props.RentalRequests}
+                RentalConfirms={this.props.RentalConfirms}
+                //
+                handleSelectedRental={this.props.handleSelectedRental}
+                handleConfirmRequestModal={this.props.handleConfirmRequestModal}
+                //
+                identity={this.props.identity}
+                uniqueName={this.props.uniqueName}
+                handleConfirmYourDriverModal={
+                  this.props.handleConfirmYourDriverModal
+                }
+                isLoadingWallet={this.props.isLoadingWallet}
+                accountHistory={this.props.accountHistory}
+                mode={this.props.mode}
+                //
+                isLoadingRequests={this.props.isLoadingRequests}
+                isRequestsRefreshReady={this.props.isRequestsRefreshReady}
+                refreshRequests={this.props.refreshRequests}
+                //handleYourRentalMsgModalShow={this.props.handleYourRentalMsgModalShow}
+              />
+            </>
+          )}
         </div>
       </>
     );

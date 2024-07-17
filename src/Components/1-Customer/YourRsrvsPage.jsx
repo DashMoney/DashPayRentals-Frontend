@@ -9,11 +9,11 @@ import CreditsOnPage from "../CreditsOnPage";
 import YourRsrvs from "./YourRsrvs";
 
 class YourRsrvsPage extends React.Component {
-  componentDidMount() {
-    if (this.props.isLoginComplete && this.props.InitialPullCustomer) {
-      this.props.pullInitialTriggerCUSTOMER();
-    }
-  }
+  // componentDidMount() {
+  //   if (this.props.isLoginComplete && this.props.InitialPullCustomer) {
+  //     this.props.pullInitialTriggerCUSTOMER();
+  //   }
+  // }
   render() {
     return (
       <>
