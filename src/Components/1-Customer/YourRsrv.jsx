@@ -376,7 +376,7 @@ class YourRsrv extends React.Component {
               <></>
             )}
 
-            {replyMessages}
+            {/* {replyMessages} */}
 
             {confirm !== undefined ? (
               <>
