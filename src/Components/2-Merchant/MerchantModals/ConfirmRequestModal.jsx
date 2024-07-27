@@ -12,6 +12,8 @@ import simpleDate from "../../DateDisplay";
 
 //import "./ConfirmPaymentModal.css";
 
+import dapiClientNoWallet from "../../DapiClientNoWallet";
+
 import Dash from "dash";
 
 const {
@@ -72,15 +74,7 @@ class ConfirmRequestModal extends React.Component {
     //   this.setState({ LoadingConfirms: true });
     // }
 
-    const clientOpts = {
-      network: this.props.whichNetwork,
-      apps: {
-        RENTALSContract: {
-          contractId: this.props.DataContractRENTALS,
-        },
-      },
-    };
-    const client = new Dash.Client(clientOpts);
+    const client = new Dash.Client(dapiClientNoWallet(this.props.whichNetwork));
 
     const getDocuments = async () => {
       return client.platform.documents.get("RENTALSContract.confirm", {
@@ -153,15 +147,7 @@ class ConfirmRequestModal extends React.Component {
   getSubsequentConfirm = (startDate, endDate) => {
     //console.log("Calling getSubsequentConfirms");
 
-    const clientOpts = {
-      network: this.props.whichNetwork,
-      apps: {
-        RENTALSContract: {
-          contractId: this.props.DataContractRENTALS,
-        },
-      },
-    };
-    const client = new Dash.Client(clientOpts);
+    const client = new Dash.Client(dapiClientNoWallet(this.props.whichNetwork));
 
     const getDocuments = async () => {
       return client.platform.documents.get("RENTALSContract.confirm", {

@@ -525,19 +525,19 @@ class SelectedRentalPage extends React.Component {
           <p></p>
           <div className="BottomBorder"></div>
 
-          <p></p>
+          {/* <p></p>
 
           <h4>
             <b>Q&A</b>
           </h4>
-          {/* {this.state.SearchedReviews.length === 0 && !this.state.LoadingDGR ? ( */}
+           {this.state.SearchedReviews.length === 0 && !this.state.LoadingDGR ? ( 
           <div className="bodytext">
             <p>
               This is where Customer's questions and the owner's answers will
               go.
             </p>
           </div>
-          {/* ) : (
+           ) : (
             <></>
           )} */}
           <p></p>

@@ -4,7 +4,7 @@ import Modal from "react-bootstrap/Modal";
 import Form from "react-bootstrap/Form";
 import CloseButton from "react-bootstrap/CloseButton";
 
-class RideReplyMsgModal extends React.Component {
+class CustomerReplyModal extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -22,14 +22,14 @@ class RideReplyMsgModal extends React.Component {
     //console.log(event.target.id);
     //console.log(`id = ${event.target.id}`);
 
-    if (event.target.id === "formOrderComment") {
+    if (event.target.id === "formComment") {
       event.preventDefault();
       event.stopPropagation();
-      this.orderCommentValidate(event.target.value);
+      this.commentValidate(event.target.value);
     }
   };
 
-  orderCommentValidate = (comment) => {
+  commentValidate = (comment) => {
     let regex = /^.[\S\s]{0,250}$/;
 
     let valid = regex.test(comment);
@@ -57,7 +57,7 @@ class RideReplyMsgModal extends React.Component {
   };
 
   handleSubmitClick = () => {
-    this.props.handleYourRideMsgSubmit(this.state.commentInput);
+    this.props.createReplyMsg(this.state.commentInput);
     this.props.hideModal();
   };
 
@@ -94,12 +94,12 @@ class RideReplyMsgModal extends React.Component {
             {closeButtonColor}
           </Modal.Header>
           <Modal.Body>
-            <Form.Group className="mb-3" controlId="formOrderComment">
-              <Form.Label>
+            <Form.Group className="mb-3" controlId="formComment">
+              {/* <Form.Label>
                 <b>
                   Message for {this.props.selectedYourRideReplyNameDoc.label}
                 </b>
-              </Form.Label>
+              </Form.Label> */}
 
               <Form.Control
                 onChange={this.onChange}
@@ -133,4 +133,4 @@ class RideReplyMsgModal extends React.Component {
   }
 }
 
-export default RideReplyMsgModal;
+export default CustomerReplyModal;

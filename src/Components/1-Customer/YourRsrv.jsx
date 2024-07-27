@@ -37,7 +37,7 @@ class YourRsrv extends React.Component {
       theConfirm.departDate === theRequest.departDate
     ) {
       //console.log("Acceptance Rejected");
-      return <Badge bg="warning">Confirm Error</Badge>;
+      return <Badge bg="success">Confirmed</Badge>;
     }
 
     // if (paidThrs.length === 0) {
@@ -47,7 +47,7 @@ class YourRsrv extends React.Component {
 
     // if (ride.replyId === this.props.drive.$id) {
     //console.log("Confirmed");
-    return <Badge bg="success">Confirmed</Badge>;
+    return <Badge bg="warning">Confirm Error</Badge>;
     //}
   };
 
@@ -74,7 +74,11 @@ class YourRsrv extends React.Component {
       return rental.$id === this.props.request.rentalId;
     });
 
-    let confirm = undefined;
+    //let confirm = undefined;
+
+    let confirm = this.props.RentalConfirms.find((confirm) => {
+      return this.props.request.$id === confirm.reqId;
+    });
 
     //
     //let replies =
@@ -304,7 +308,7 @@ class YourRsrv extends React.Component {
                 <Button
                   variant="primary"
                   // onClick={() => {
-                  //   this.props.refreshYourRides();
+                  //   this.props.refreshYourRequests();
                   // }}
                   style={{
                     fontSize: "larger",
@@ -332,8 +336,8 @@ class YourRsrv extends React.Component {
                 </div>
               </>
             )}
-            {/* 
-            {confirmedDrive !== undefined ? (
+
+            {/* {confirm !== undefined ? (
               <>
                 <h5>
                   <span
@@ -359,12 +363,13 @@ class YourRsrv extends React.Component {
               </>
             ) : (
               <></>
-            )}
-            {confirmedDrive === undefined ? <>{DriversToConfirm}</> : <></>}
-            {confirmedDrive === undefined && acceptDrives.length === 0 ? (
+            )} */}
+
+            {confirm === undefined ? (
               <>
                 <p style={{ textAlign: "center", paddingTop: ".5rem" }}>
-                  (Currently, there are no responses to this ride request.)
+                  (Currently, there are no messages for this rental
+                  reservation.)
                 </p>
               </>
             ) : (
@@ -373,7 +378,7 @@ class YourRsrv extends React.Component {
 
             {replyMessages}
 
-            {confirmedDrive !== undefined ? (
+            {confirm !== undefined ? (
               <>
                 <div className="ButtonRightNoUnderline">
                   <Button
@@ -391,7 +396,7 @@ class YourRsrv extends React.Component {
               </>
             ) : (
               <></>
-            )} */}
+            )}
           </Card.Body>
         </Card>
       </>

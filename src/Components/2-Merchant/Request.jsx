@@ -80,14 +80,15 @@ class Request extends React.Component {
 
     let confirm = undefined;
 
-    if (this.props.DisplayRequests === "Confirmed")
+    if (this.props.DisplayRequests === "Confirmed") {
       confirm = this.props.RentalConfirms.find((confirm) => {
         return this.props.request.$id === confirm.reqId;
       });
+    }
 
     //
     //let replies =
-    // let replie names??
+    // let replyName =
 
     // if (rideRequest !== undefined) {
     //   rideRequestName = this.props.rideRequestsNames.find((requestName) => {
@@ -293,7 +294,7 @@ class Request extends React.Component {
                   <Button
                     variant="primary"
                     // onClick={() =>
-                    //   this.props.handleDeleteYourRequest(this.props.index)
+                    //   this.props.handleDeleteRequest(this.props.index)
                     // }
                   >
                     <b>Delete Request</b>
@@ -301,7 +302,7 @@ class Request extends React.Component {
                   <Button
                     variant="primary"
                     // onClick={() =>
-                    //   this.props.handleEditYourRequest(this.props.index)
+                    //   this.props.handleEditRequest(this.props.index)
                     // }
                   >
                     <b>Edit Request</b>
@@ -359,8 +360,12 @@ class Request extends React.Component {
                     </div>
                   </>
                 )}
-                {/* 
-            {confirmedDrive !== undefined ? (
+              </>
+            ) : (
+              <></>
+            )}
+
+            {confirm !== undefined ? (
               <>
                 <h5>
                   <span
@@ -369,7 +374,7 @@ class Request extends React.Component {
                       marginBottom: "0rem",
                     }}
                   >
-                    <b>Driver:</b>
+                    <b>Renter:</b>
                   </span>
                   <span
                     style={{
@@ -379,7 +384,7 @@ class Request extends React.Component {
                     }}
                   >
                     {" "}
-                    <b>{replyNames.label}</b>
+                    <b>{replyName.label}</b>
                   </span>
                 </h5>
                 <p></p>
@@ -387,11 +392,11 @@ class Request extends React.Component {
             ) : (
               <></>
             )}
-            {confirmedDrive === undefined ? <>{DriversToConfirm}</> : <></>}
-            {confirmedDrive === undefined && acceptDrives.length === 0 ? (
+
+            {confirm !== undefined && replies.length === 0 ? (
               <>
                 <p style={{ textAlign: "center", paddingTop: ".5rem" }}>
-                  (Currently, there are no responses to this ride request.)
+                  (Currently, there are no messages to this reservation.)
                 </p>
               </>
             ) : (
@@ -400,25 +405,21 @@ class Request extends React.Component {
 
             {replyMessages}
 
-            {confirmedDrive !== undefined ? (
+            {confirm !== undefined ? (
               <>
                 <div className="ButtonRightNoUnderline">
                   <Button
                     variant="primary"
-                    onClick={() =>
-                      this.props.handleYourRideMsgModalShow(
-                        this.props.ride,
-                        replyNames
-                      )
-                    }
+                    // onClick={() =>
+                    //   this.props.handleYourRideMsgModalShow(
+                    //     this.props.ride,
+                    //     replyName
+                    //   )
+                    // }
                   >
                     <b>Add Message</b>
                   </Button>
                 </div>
-              </>
-            ) : (
-              <></>
-            )} */}
               </>
             ) : (
               <></>

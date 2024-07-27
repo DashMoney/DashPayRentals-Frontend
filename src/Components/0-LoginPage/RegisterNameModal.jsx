@@ -8,6 +8,8 @@ import Alert from "react-bootstrap/Alert";
 import Spinner from "react-bootstrap/Spinner";
 import CloseButton from "react-bootstrap/CloseButton";
 
+import dapiClient from "../DapiClient";
+import dapiClientNoWallet from "../DapiClientNoWallet";
 import Dash from "dash";
 
 class RegisterNameModal extends React.Component {
@@ -18,6 +20,7 @@ class RegisterNameModal extends React.Component {
       isError: false,
       nameTaken: false,
       nameAvailable: false,
+      nameContested: false,
       searchedName: "",
       validityCheck: false,
     };
@@ -28,43 +31,52 @@ class RegisterNameModal extends React.Component {
   };
 
   onChange = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+
     this.setState({
       isError: false,
       isLoading: false,
       nameTaken: false,
       nameAvailable: false,
+      nameContested: false,
     });
-    if (this.formValidate(event.target.value) === true) {
-      event.preventDefault();
-      event.stopPropagation();
-      this.setState({
-        validityCheck: true,
-      });
-    } else {
-      event.preventDefault();
-      event.stopPropagation();
-      this.setState({
-        validityCheck: false,
-      });
-    }
+
+    this.formValidate(event.target.value);
   };
 
   formValidate = (nameInput) => {
     let regex = /^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9]$/;
     let valid = regex.test(nameInput);
 
-    if (valid) {
+    //Regex("^[a-zA-Z01-]{3,19}$")
+
+    let regexContested = /^[a-zA-Z01-]{3,19}$/;
+    let validContested = regexContested.test(nameInput);
+
+    if (valid && !validContested) {
       this.setState({
         searchedName: nameInput,
+        validityCheck: true,
       });
-      return true;
     } else {
-      return false;
+      if (validContested) {
+        this.setState({
+          searchedName: nameInput,
+          validityCheck: false,
+          nameContested: true,
+        });
+      } else {
+        this.setState({
+          searchedName: nameInput,
+          validityCheck: false,
+        });
+      }
     }
   };
 
   searchName = (nameToRetrieve) => {
-    let client = new Dash.Client({ network: this.props.whichNetwork });
+    let client = new Dash.Client(dapiClientNoWallet(this.props.whichNetwork));
 
     const retrieveName = async () => {
       // Retrieve by full name (e.g., myname.dash)
@@ -107,18 +119,24 @@ class RegisterNameModal extends React.Component {
   purchaseName = (theName) => {
     const nameToRegister = theName; // Enter name to register
 
-    const clientOpts = {
-      network: this.props.whichNetwork,
-      wallet: {
-        mnemonic: this.props.mnemonic, // A Dash wallet mnemonic with testnet funds
-        adapter: LocalForage.createInstance,
-        unsafeOptions: {
-          skipSynchronizationBeforeHeight:
-            this.props.skipSynchronizationBeforeHeight,
-        },
-      },
-    };
-    const client = new Dash.Client(clientOpts);
+    // const clientOpts = {
+    //   network: this.props.whichNetwork,
+    //   wallet: {
+    //     mnemonic: this.props.mnemonic, // A Dash wallet mnemonic with testnet funds
+    //     adapter: LocalForage.createInstance,
+    //     unsafeOptions: {
+    //       skipSynchronizationBeforeHeight:
+    //         this.props.skipSynchronizationBeforeHeight, // only sync from early-2022
+    //     },
+    //   },
+    // };
+    const client = new Dash.Client(
+      dapiClient(
+        this.props.whichNetwork,
+        this.props.mnemonic,
+        this.props.skipSynchronizationBeforeHeight
+      )
+    );
 
     const registerName = async () => {
       const { platform } = client;
@@ -129,7 +147,8 @@ class RegisterNameModal extends React.Component {
 
       const nameRegistration = await platform.names.register(
         `${nameToRegister}.dash`,
-        { dashUniqueIdentityId: identity.getId() },
+        { identity: identity.getId() },
+        // { dashUniqueIdentityId: identity.getId() },
         identity
       );
 
@@ -168,7 +187,8 @@ class RegisterNameModal extends React.Component {
     });
 
     if (this.state.nameAvailable) {
-      if (this.formValidate(nameToTry)) {
+      if (this.state.validityCheck) {
+        // if (this.formValidate(nameToTry)) {
         console.log(`A good one: ${nameToTry}`);
         ///this is where call function to Purchase the Name ****************************************************************
         this.props.triggerNameLoading(); //trigger for connected page spinner
@@ -271,6 +291,20 @@ class RegisterNameModal extends React.Component {
                     style={{ color: "red", marginTop: ".2rem" }}
                   >
                     <b>{this.state.searchedName} is not available.</b>
+                  </p>
+                ) : (
+                  <></>
+                )}
+
+                {this.state.nameContested ? (
+                  <p
+                    className="smallertext"
+                    style={{ color: "red", marginTop: ".2rem" }}
+                  >
+                    <b>
+                      {this.state.searchedName} is a contested name. Please
+                      include a number from 2-9 in your name.
+                    </b>
                   </p>
                 ) : (
                   <></>

@@ -36,15 +36,17 @@ import CreateNewWalletModal from "./Components/0-LoginPage/CreateNewWalletModal"
 import RegisterIdentityModal from "./Components/0-LoginPage/RegisterIdentityModal";
 
 import RegisterNameModal from "./Components/0-LoginPage/RegisterNameModal";
-import WalletTXModal from "./Components/WalletTXModal";
+//import WalletTXModal from "./Components/WalletTXModal";
 
 import SendFundsModal from "./Components/0-LoginPage/SendFundsModal";
 import LogoutModal from "./Components/0-LoginPage/LogoutModal";
 
+import dapiClient from "./Components/DapiClient";
+import dapiClientNoWallet from "./Components/DapiClientNoWallet";
+
 import Dash from "dash";
 
 const {
-  Essentials: { Buffer },
   PlatformProtocol: { Identifier },
 } = Dash;
 
@@ -62,6 +64,7 @@ class App extends React.Component {
       isLoadingIdInfo: true,
       //isLoadingCreditTransfer: false,
       isLoadingName: true,
+      isLoadingMerchantName: true,
 
       isLoadingWallet: true, //For wallet for topup
 
@@ -96,6 +99,8 @@ class App extends React.Component {
       //
       skipSynchronizationBeforeHeight: 1029000,
 
+      //skipSynchronizationBeforeHeightTESTNET: 1029000,
+
       isLoadingRentals: true,
       isLoadingRequests: true,
 
@@ -105,6 +110,9 @@ class App extends React.Component {
 
       selectedArriveDate: "",
       selectedDepartureDate: "",
+
+      isMerchantRequestsRefreshReady: true,
+      isYourRsrvsRefreshReady: true,
 
       Merchant1: false,
       Merchant2: false,
@@ -191,6 +199,8 @@ class App extends React.Component {
         // },
       ], //This can be queried on signin
 
+      RentalRequestsNames: [], //This is only used by Merchant
+
       RentalConfirms: [
         // {
         //   $id: "6w6lwwwwwwwwwwg",
@@ -222,10 +232,74 @@ class App extends React.Component {
       RentalReplies: [],
 
       MerchantId: import.meta.env.VITE_MERCHANT_IDENTITY,
-      //Merchant Name??
-      DataContractDPNS: "GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec",
-      DataContractRENTALS: "6ortNLV5hTThxBh2AxiRktXq1SyQsZusTq9PPGQK7FRS",
-      //DataContractTESTNETRENTALS: "6ortNLV5hTThxBh2AxiRktXq1SyQsZusTq9PPGQK7FRS",
+
+      MerchantNameDoc: {
+        $ownerId: import.meta.env.VITE_MERCHANT_IDENTITY,
+        label: "No name avail", //import.meta.env.VITE_FRONTEND_NAME
+      },
+
+      //REVIEWS (BELOW)
+
+      //isLoadingReviewsSearch: false,
+      isLoadingYourReviews: true,
+
+      SearchReviews1: false,
+      SearchReviews2: false,
+
+      YourReviews1: false,
+      YourReviews2: false,
+
+      YourReviews: [],
+      YourReviewNames: [],
+
+      YourReplies: [],
+      //^^ Doesn't need names because they are only your replies.. -> yes
+
+      // SearchedNameDoc: {
+      //   $ownerId: "JAdeE9whiXXdxzSrz7Rd1i8aHC3XFh5AvuV7cpxcYYmN",
+      //   label: "BurgerJoint",
+      // },
+
+      SearchedReviews: [
+        // {
+        //   $ownerId: "4h5j6j",
+        //   $id: "7ku98rj",
+        //   review: "Good service, would eat here again!",
+        //   rating: 5,
+        //   toId: "fjghtyru",
+        //   $createdAt: Date.now() - 1000000,
+        // },
+      ],
+
+      SearchedReviewNames: [
+        // {
+        //   $ownerId: "4h5j6j",
+        //   label: "Alice",
+        // },
+      ],
+
+      SearchedReplies: [
+        // {
+        //   $ownerId: "JAdeE9whiXXdxzSrz7Rd1i8aHC3XFh5AvuV7cpxcYYmN",
+        //   $id: "klsui4312",
+        //   reply: "Thanks Alice",
+        //   reviewId: "7ku98rj",
+        //   $createdAt: Date.now() - 300000,
+        // },
+      ],
+
+      reviewToEdit: [], //use a function to find and pass to modal ->
+      reviewToEditIndex: "",
+
+      replyReview: [], //This is for the create reply reviewId
+      replyToEdit: [],
+      replyingToName: "",
+
+      //REVIEWS STATE^^^^^^
+
+      // DataContractDPNS: "GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec",
+      // DataContractRENTALS: '5mxuMjDW9FBFysnyoX31jAo1QpvvBFRhrJcHNTeYM1Zx',
+      //DataContractREVIEWS: "",
 
       expandedTopNav: false,
     };
@@ -338,16 +412,37 @@ class App extends React.Component {
     //****************************** */
 
     //NEED TO SET TESTNET OR MAINNET FOR THE DATA CONTRACTS HERE AND THEN CALL THE getRentals()
+    //skipSynchronizationBeforeHeight <- ****
     //
     //WHAT ABOUT THE KEYS WELL THE WALLETS ARE DIFFERENT SO SHOULD NOT INTERFER..
     //
-    //ALSO WHAT ABOUT GETTING THE OWNER NAME ? -> yeah
+    //ALSO WHAT ABOUT GETTING THE OWNER NAME ? -> yes
     //  -> based on MerchantId ->
 
     //
-    this.getRentals();
+    this.verifyNetworkAndSkipSync();
     //
   }
+
+  verifyNetworkAndSkipSync = () => {
+    // RUN CompDidMount
+
+    //ALREADY SET IN COMPONENT PROPS
+    // whichNetwork: import.meta.env.VITE_NETWORK,
+
+    if (this.state.whichNetwork !== "mainnet") {
+      this.setState(
+        {
+          whichNetwork: "testnet",
+          // skipSynchronizationBeforeHeight:
+          //   this.state.skipSynchronizationBeforeHeightTESTNET,
+        },
+        () => this.getRentals()
+      );
+    } else {
+      this.getRentals();
+    }
+  };
 
   //ACCOUNT LOGIN FUNCTIONS => SIMPLE LOGIN FIRST
   triggerNameLoading = () => {
@@ -493,21 +588,16 @@ class App extends React.Component {
       () => this.getWalletAndIdentitywithMnem(this.state.mnemonic)
     );
   };
-  //
+
   // BELOW STANDARD LOGIN
   getWalletAndIdentitywithMnem = (theMnemonic) => {
-    //gOT FROM DGM
-    const client = new Dash.Client({
-      network: this.state.whichNetwork,
-      wallet: {
-        mnemonic: theMnemonic,
-        adapter: LocalForage.createInstance,
-        unsafeOptions: {
-          skipSynchronizationBeforeHeight:
-            this.state.skipSynchronizationBeforeHeight,
-        },
-      },
-    });
+    const client = new Dash.Client(
+      dapiClient(
+        this.state.whichNetwork,
+        theMnemonic,
+        this.state.skipSynchronizationBeforeHeight
+      )
+    );
 
     const retrieveIdentityIds = async () => {
       const account = await client.getWalletAccount();
@@ -571,21 +661,16 @@ class App extends React.Component {
     this.getNamefromIdentity(theIdentity);
     // this.getAliasfromIdentity(theIdentity);
   }; //Many LF, mostRecent and other functions have not been incorporated yet
-  //
-  //
+
   // BELOW PLATFORM LOGIN - WALLET PART
   getWalletPlatformLogin = (theMnemonic) => {
-    const client = new Dash.Client({
-      network: this.state.whichNetwork,
-      wallet: {
-        mnemonic: theMnemonic,
-        adapter: LocalForage.createInstance,
-        unsafeOptions: {
-          skipSynchronizationBeforeHeight:
-            this.state.skipSynchronizationBeforeHeight,
-        },
-      },
-    });
+    const client = new Dash.Client(
+      dapiClient(
+        this.state.whichNetwork,
+        theMnemonic,
+        this.state.skipSynchronizationBeforeHeight
+      )
+    );
 
     const retrieveIdentityIds = async () => {
       const account = await client.getWalletAccount();
@@ -644,9 +729,7 @@ class App extends React.Component {
   getIdentityInfo = (theIdentity) => {
     console.log("Called get identity info");
 
-    const client = new Dash.Client({
-      network: this.state.whichNetwork,
-    });
+    const client = new Dash.Client(dapiClientNoWallet(this.state.whichNetwork));
 
     const retrieveIdentity = async () => {
       return client.platform.identities.get(theIdentity); // Your identity ID
@@ -713,12 +796,12 @@ class App extends React.Component {
   };
 
   getNamefromIdentity = (theIdentity) => {
-    const client = new Dash.Client({ network: this.state.whichNetwork });
+    const client = new Dash.Client(dapiClientNoWallet(this.state.whichNetwork));
 
     const retrieveNameByRecord = async () => {
       // Retrieve by a name's identity ID
       return client.platform.names.resolveByRecord(
-        "dashUniqueIdentityId",
+        "identity",
         theIdentity // Your identity ID
       );
     };
@@ -803,19 +886,13 @@ class App extends React.Component {
       isLoadingIdInfo: true,
     });
 
-    const clientOpts = {
-      network: this.state.whichNetwork,
-      wallet: {
-        mnemonic: this.state.mnemonic,
-        adapter: LocalForage.createInstance,
-        unsafeOptions: {
-          skipSynchronizationBeforeHeight:
-            this.state.skipSynchronizationBeforeHeight,
-        },
-      },
-    };
-
-    const client = new Dash.Client(clientOpts);
+    const client = new Dash.Client(
+      dapiClient(
+        this.state.whichNetwork,
+        this.state.mnemonic,
+        this.state.skipSynchronizationBeforeHeight
+      )
+    );
 
     const createIdentity = async () => {
       return client.platform.identities.register();
@@ -852,18 +929,13 @@ class App extends React.Component {
       identityInfo: "",
     });
 
-    const clientOpts = {
-      network: this.state.whichNetwork,
-      wallet: {
-        mnemonic: this.state.mnemonic,
-        adapter: LocalForage.createInstance,
-        unsafeOptions: {
-          skipSynchronizationBeforeHeight:
-            this.state.skipSynchronizationBeforeHeight,
-        },
-      },
-    };
-    const client = new Dash.Client(clientOpts);
+    const client = new Dash.Client(
+      dapiClient(
+        this.state.whichNetwork,
+        this.state.mnemonic,
+        this.state.skipSynchronizationBeforeHeight
+      )
+    );
 
     const topupIdentity = async () => {
       const identityId = this.state.identity; // Your identity ID
@@ -931,21 +1003,16 @@ class App extends React.Component {
     );
   };
 
+  //getCompDidMountRace = () => {}
+  //DONT COMBINE Rentals and MerchantName, KEEP EACH SEPARATE SO CAN LOAD FASTER AND NOT DEPENDANT.
+
   getRentals = () => {
     //console.log("Calling getRentals");
     // if (!this.state.isLoadingRentals) {
     //   this.setState({ isLoadingRentals: true });
     // }
 
-    const clientOpts = {
-      network: this.state.whichNetwork,
-      apps: {
-        RENTALSContract: {
-          contractId: this.state.DataContractRENTALS,
-        },
-      },
-    };
-    const client = new Dash.Client(clientOpts);
+    const client = new Dash.Client(dapiClientNoWallet(this.state.whichNetwork));
 
     const getDocuments = async () => {
       return client.platform.documents.get("RENTALSContract.rental", {
@@ -986,6 +1053,8 @@ class App extends React.Component {
             Rentals: docArray,
             isLoadingRentals: false,
           });
+
+          this.getMerchantName();
         }
       })
       .catch((e) => {
@@ -995,6 +1064,43 @@ class App extends React.Component {
           Rentals: [],
           isLoadingRentals: false,
         });
+        this.getMerchantName();
+      })
+      .finally(() => client.disconnect());
+  };
+
+  //BELOW - For adding the name of merchant to the Rental
+  getMerchantName = () => {
+    const client = new Dash.Client(dapiClientNoWallet(this.state.whichNetwork));
+
+    const retrieveNameByRecord = async () => {
+      return client.platform.names.resolveByRecord(
+        "identity",
+        this.state.MerchantId
+      );
+    };
+
+    retrieveNameByRecord()
+      .then((d) => {
+        if (d.length === 0) {
+          console.log("There is no Name.");
+          this.setState({
+            isLoadingMerchantName: false,
+          });
+        } else {
+          let nameRetrieved = d[0].toJSON();
+          //console.log("Merchant Name retrieved:\n", nameRetrieved);
+          this.setState({
+            isLoadingMerchantName: false,
+            MerchantNameDoc: nameRetrieved,
+          });
+        }
+      })
+      .catch((e) => {
+        this.setState({
+          isLoadingMerchantName: false,
+        });
+        console.error("Something went wrong getting merchant name:\n", e);
       })
       .finally(() => client.disconnect());
   };
@@ -1006,23 +1112,13 @@ class App extends React.Component {
       isLoadingRentals: true,
     });
 
-    const clientOpts = {
-      network: this.state.whichNetwork,
-      wallet: {
-        mnemonic: this.state.mnemonic,
-        adapter: LocalForage.createInstance,
-        unsafeOptions: {
-          skipSynchronizationBeforeHeight:
-            this.state.skipSynchronizationBeforeHeight,
-        },
-      },
-      apps: {
-        RENTALSContract: {
-          contractId: this.state.DataContractRENTALS,
-        },
-      },
-    };
-    const client = new Dash.Client(clientOpts);
+    const client = new Dash.Client(
+      dapiClient(
+        this.state.whichNetwork,
+        this.state.mnemonic,
+        this.state.skipSynchronizationBeforeHeight
+      )
+    );
 
     const submitRideDoc = async () => {
       const { platform } = client;
@@ -1105,24 +1201,13 @@ class App extends React.Component {
       isLoadingRentals: true,
     });
 
-    const clientOpts = {
-      network: this.state.whichNetwork,
-      wallet: {
-        mnemonic: this.state.mnemonic,
-        adapter: LocalForage.createInstance,
-        unsafeOptions: {
-          skipSynchronizationBeforeHeight:
-            this.state.skipSynchronizationBeforeHeight,
-        },
-      },
-      apps: {
-        RADContract: {
-          contractId: this.state.DataContractRAD,
-        },
-      },
-    };
-
-    const client = new Dash.Client(clientOpts);
+    const client = new Dash.Client(
+      dapiClient(
+        this.state.whichNetwork,
+        this.state.mnemonic,
+        this.state.skipSynchronizationBeforeHeight
+      )
+    );
 
     const submitPostDoc = async () => {
       const { platform } = client;
@@ -1277,23 +1362,13 @@ class App extends React.Component {
       isLoadingYourRides: true,
     });
 
-    const clientOpts = {
-      network: this.state.whichNetwork,
-      wallet: {
-        mnemonic: this.state.mnemonic,
-        adapter: LocalForage.createInstance,
-        unsafeOptions: {
-          skipSynchronizationBeforeHeight:
-            this.state.skipSynchronizationBeforeHeight,
-        },
-      },
-      apps: {
-        RADContract: {
-          contractId: this.state.DataContractRAD,
-        },
-      },
-    };
-    const client = new Dash.Client(clientOpts);
+    const client = new Dash.Client(
+      dapiClient(
+        this.state.whichNetwork,
+        this.state.mnemonic,
+        this.state.skipSynchronizationBeforeHeight
+      )
+    );
 
     const deleteRideDocument = async () => {
       const { platform } = client;
@@ -1341,12 +1416,6 @@ class App extends React.Component {
 
   /*
   * RENTALS FUNCTIONS^^^^
-   *                                         ################
-   *                                         ###          ####
-   *                                         ################
-   *                                         ###          ####
-   *                                         ###           ####
-   
    
    *     ###     ###
    *    ## ##    ####
@@ -1365,12 +1434,47 @@ class App extends React.Component {
   //   });
   // };
 
+  //SETTIMEOUT WAY BELOW
+  allowMerchantRequestsRefresh = () => {
+    this.setState({
+      isMerchantRequestsRefreshReady: true,
+    });
+  };
+  //FUNCTION FOR BUTTON TO TRIGGER - CHANGES STATE AND GOES AND LOOKS UP AND SETS STATE DIRECTLY.
+  refreshMerchantRequests = () => {
+    this.setState({
+      isLoadingRequests: true,
+      isMerchantRequestsRefreshReady: false,
+    });
+
+    this.startMerchantRace();
+    //REFRESH -> TIMEOUT
+    //if (!this.state.isMerchantRequestsRefreshReady) {
+    const MerchantRequestsTimeout = setTimeout(
+      this.allowMerchantRequestsRefresh,
+      15000
+    );
+    // }
+    //REFRESH -> TIMEOUT
+  };
+
+  //SETTIMEOUT WAY ^^^^
+
   startMerchantRace = () => {
     if (!this.state.isLoadingRequests) {
       this.setState({ isLoadingRequests: true });
     }
-    this.getConfirms();
-    this.getRequests();
+    if (this.state.Rentals.length !== 0) {
+      this.getConfirms();
+      this.getRequests();
+    } else {
+      this.setState({
+        Merchant1: false,
+        Merchant2: false,
+
+        isLoadingRequests: false,
+      });
+    }
   };
 
   merchantRace = () => {
@@ -1387,15 +1491,7 @@ class App extends React.Component {
   getRequests = () => {
     //console.log("Calling getRequests");
 
-    const clientOpts = {
-      network: this.state.whichNetwork,
-      apps: {
-        RENTALSContract: {
-          contractId: this.state.DataContractRENTALS,
-        },
-      },
-    };
-    const client = new Dash.Client(clientOpts);
+    const client = new Dash.Client(dapiClientNoWallet(this.state.whichNetwork));
 
     let arrayOfRentalIds = this.state.Rentals.map((doc) => {
       return doc.$id;
@@ -1441,31 +1537,73 @@ class App extends React.Component {
             //  console.log("newRequest:\n", returnedDoc);
             docArray = [...docArray, returnedDoc];
           }
-          //this.getYourRsrvsConfirms(docArray);
-          this.setState(
-            {
-              Merchant1: true,
-              RentalRequests: docArray,
-              //Merchant2: true,
-            },
-            () => this.merchantRace()
-          );
+          this.getRequestsNames(docArray);
+          // this.setState(
+          //   {
+          //     Merchant1: true,
+          //     RentalRequests: docArray,
+
+          //   },
+          //   () => this.merchantRace()
+          // );
         }
       })
       .catch((e) => console.error("Something went wrong:\n", e))
       .finally(() => client.disconnect());
   };
 
-  getConfirms = () => {
-    const clientOpts = {
-      network: this.state.whichNetwork,
-      apps: {
-        RENTALSContract: {
-          contractId: this.state.DataContractRENTALS,
-        },
-      },
+  getRequestsNames = (docArray) => {
+    const client = new Dash.Client(dapiClientNoWallet(this.state.whichNetwork));
+    //START OF NAME RETRIEVAL
+
+    let ownerarrayOfOwnerIds = docArray.map((doc) => {
+      return doc.$ownerId;
+    });
+
+    let setOfOwnerIds = [...new Set(ownerarrayOfOwnerIds)];
+
+    let arrayOfOwnerIds = [...setOfOwnerIds];
+
+    //console.log("Calling getNamesforDrives");
+
+    const getNameDocuments = async () => {
+      return client.platform.documents.get("DPNSContract.domain", {
+        where: [["records.identity", "in", arrayOfOwnerIds]],
+        orderBy: [["records.identity", "asc"]],
+      });
     };
-    const client = new Dash.Client(clientOpts);
+
+    getNameDocuments()
+      .then((d) => {
+        //WHAT IF THERE ARE NO NAMES? -> THEN THIS WON'T BE CALLED
+        // if (d.length === 0) {
+        //console.log("No DPNS domain documents retrieved.");
+        // }
+        let nameDocArray = [];
+
+        for (const n of d) {
+          //console.log("NameDoc:\n", n.toJSON());
+          nameDocArray = [n.toJSON(), ...nameDocArray];
+        }
+        //console.log(`DPNS Name Docs: ${nameDocArray}`);
+        this.setState(
+          {
+            Merchant1: true,
+            RentalRequests: docArray,
+            RentalRequestsNames: nameDocArray,
+          },
+          () => this.merchantRace()
+        );
+      })
+      .catch((e) => {
+        console.error("Something went wrong getting Requests Names:\n", e);
+      })
+      .finally(() => client.disconnect());
+    //END OF NAME RETRIEVAL
+  };
+
+  getConfirms = () => {
+    const client = new Dash.Client(dapiClientNoWallet(this.state.whichNetwork));
 
     let arrayOfRentalIds = this.state.Rentals.map((doc) => {
       return doc.$id;
@@ -1529,15 +1667,7 @@ class App extends React.Component {
   };
 
   getConfirmReplies = (theConfirms) => {
-    const clientOpts = {
-      network: this.state.whichNetwork,
-      apps: {
-        RENTALSContract: {
-          contractId: this.state.DataContractRENTALS,
-        },
-      },
-    };
-    const client = new Dash.Client(clientOpts);
+    const client = new Dash.Client(dapiClientNoWallet(this.state.whichNetwork));
 
     // This Below is to get unique set of Confirm doc ids
     let arrayOfConfirmIds = theConfirms.map((doc) => {
@@ -1645,23 +1775,13 @@ class App extends React.Component {
       selectedDapp: "Rentals",
     });
 
-    const clientOpts = {
-      network: this.state.whichNetwork,
-      wallet: {
-        mnemonic: this.state.mnemonic,
-        adapter: LocalForage.createInstance,
-        unsafeOptions: {
-          skipSynchronizationBeforeHeight:
-            this.state.skipSynchronizationBeforeHeight,
-        },
-      },
-      apps: {
-        RENTALSContract: {
-          contractId: this.state.DataContractRENTALS,
-        },
-      },
-    };
-    const client = new Dash.Client(clientOpts);
+    const client = new Dash.Client(
+      dapiClient(
+        this.state.whichNetwork,
+        this.state.mnemonic,
+        this.state.skipSynchronizationBeforeHeight
+      )
+    );
 
     const submitReviewDoc = async () => {
       const { platform } = client;
@@ -1748,23 +1868,13 @@ class App extends React.Component {
       selectedDapp: "Rentals",
     });
 
-    const clientOpts = {
-      network: this.state.whichNetwork,
-      wallet: {
-        mnemonic: this.state.mnemonic,
-        adapter: LocalForage.createInstance,
-        unsafeOptions: {
-          skipSynchronizationBeforeHeight:
-            this.state.skipSynchronizationBeforeHeight,
-        },
-      },
-      apps: {
-        RENTALSContract: {
-          contractId: this.state.DataContractRENTALS,
-        },
-      },
-    };
-    const client = new Dash.Client(clientOpts);
+    const client = new Dash.Client(
+      dapiClient(
+        this.state.whichNetwork,
+        this.state.mnemonic,
+        this.state.skipSynchronizationBeforeHeight
+      )
+    );
 
     const submitReviewDoc = async () => {
       const { platform } = client;
@@ -1841,114 +1951,6 @@ class App extends React.Component {
       .finally(() => client.disconnect());
   };
 
-  //createReply
-  createRentalReply = (replyMsgComment) => {
-    //console.log("Called Your Drive Message Submit: ", replyMsgComment);
-
-    this.setState({
-      isLoadingYourDrives: true,
-    });
-
-    const clientOpts = {
-      network: this.state.whichNetwork,
-      wallet: {
-        mnemonic: this.state.mnemonic,
-        adapter: LocalForage.createInstance,
-        unsafeOptions: {
-          skipSynchronizationBeforeHeight:
-            this.state.skipSynchronizationBeforeHeight,
-        },
-      },
-      apps: {
-        RADContract: {
-          contractId: this.state.DataContractRAD,
-        },
-      },
-    };
-    const client = new Dash.Client(clientOpts);
-
-    const submitMsgDoc = async () => {
-      const { platform } = client;
-
-      let identity = "";
-      if (this.state.identityRaw !== "") {
-        identity = this.state.identityRaw;
-      } else {
-        identity = await platform.identities.get(this.state.identity);
-      }
-
-      const replyProperties = {
-        amt: 0,
-        //toId
-        reqId: this.state.selectedYourDrive.$id,
-        msg: replyMsgComment,
-      };
-      //console.log('Reply to Create: ', replyProperties);
-
-      // Create the note document
-      const radDocument = await platform.documents.create(
-        "RADContract.rideReply",
-        identity,
-        replyProperties
-      );
-
-      //############################################################
-      //This below disconnects the document sending..***
-
-      //return radDocument;
-
-      //This is to disconnect the Document Creation***
-      //############################################################
-
-      const documentBatch = {
-        create: [radDocument], // Document(s) to create
-      };
-
-      await platform.documents.broadcast(documentBatch, identity);
-      return radDocument;
-    };
-
-    submitMsgDoc()
-      .then((d) => {
-        let returnedDoc = d.toJSON();
-        console.log("Document:\n", returnedDoc);
-
-        // returnedDoc.reqId = Identifier.from(
-        //   returnedDoc.reqId,
-        //   "base64"
-        // ).toJSON();
-
-        let rideReply = {
-          $ownerId: returnedDoc.$ownerId,
-          $id: returnedDoc.$id,
-          $createdAt: returnedDoc.$createdAt,
-          amt: 0,
-          //toId
-          reqId: returnedDoc.reqId,
-          msg: replyMsgComment,
-        };
-
-        this.setState(
-          {
-            //YourDrives: [rideReply, ...this.state.YourDrives],
-            YourDrivesRequestsReplies: [
-              rideReply,
-              ...this.state.YourDrivesRequestsReplies,
-            ],
-            isLoadingYourDrives: false,
-          },
-          () => this.loadIdentityCredits()
-        );
-      })
-      .catch((e) => {
-        console.error(
-          "Something went wrong with Your Drive Reply Msg creation:\n",
-          e
-        );
-      })
-      .finally(() => client.disconnect());
-  };
-
   /*
    * MERCHANT FUNCTIONS^^^^
    *                                 ###     ###
@@ -1956,6 +1958,9 @@ class App extends React.Component {
    *                               ###  ##  ##  ##
    *                              ###    ####    ##
    *                             ###      ###     ##
+   *
+   *
+   *
    *      #############
    *     ####         ##
    *     ###
@@ -1986,23 +1991,13 @@ class App extends React.Component {
       selectedDapp: "Rentals",
     });
 
-    const clientOpts = {
-      network: this.state.whichNetwork,
-      wallet: {
-        mnemonic: this.state.mnemonic,
-        adapter: LocalForage.createInstance,
-        unsafeOptions: {
-          skipSynchronizationBeforeHeight:
-            this.state.skipSynchronizationBeforeHeight,
-        },
-      },
-      apps: {
-        RENTALSContract: {
-          contractId: this.state.DataContractRENTALS,
-        },
-      },
-    };
-    const client = new Dash.Client(clientOpts);
+    const client = new Dash.Client(
+      dapiClient(
+        this.state.whichNetwork,
+        this.state.mnemonic,
+        this.state.skipSynchronizationBeforeHeight
+      )
+    );
 
     const submitReviewDoc = async () => {
       const { platform } = client;
@@ -2109,15 +2104,7 @@ class App extends React.Component {
       this.setState({ isLoadingRequests: true });
     }
 
-    const clientOpts = {
-      network: this.state.whichNetwork,
-      apps: {
-        RENTALSContract: {
-          contractId: this.state.DataContractRENTALS,
-        },
-      },
-    };
-    const client = new Dash.Client(clientOpts);
+    const client = new Dash.Client(dapiClientNoWallet(this.state.whichNetwork));
 
     let arrayOfRentalIds = this.state.Rentals.map((doc) => {
       return doc.$id;
@@ -2169,15 +2156,7 @@ class App extends React.Component {
   };
 
   getYourRsrvsConfirms = (theDocArray) => {
-    const clientOpts = {
-      network: this.state.whichNetwork,
-      apps: {
-        RENTALSContract: {
-          contractId: this.state.DataContractRENTALS,
-        },
-      },
-    };
-    const client = new Dash.Client(clientOpts);
+    const client = new Dash.Client(dapiClientNoWallet(this.state.whichNetwork));
 
     // This Below is to get unique set of Req doc ids
     let arrayOfReqIds = theDocArray.map((doc) => {
@@ -2240,15 +2219,7 @@ class App extends React.Component {
   };
 
   getYourRsrvsReplies = (theConfirms, theRequests) => {
-    const clientOpts = {
-      network: this.state.whichNetwork,
-      apps: {
-        RENTALSContract: {
-          contractId: this.state.DataContractRENTALS,
-        },
-      },
-    };
-    const client = new Dash.Client(clientOpts);
+    const client = new Dash.Client(dapiClientNoWallet(this.state.whichNetwork));
 
     // This Below is to get unique set of Confirm doc ids
     let arrayOfConfirmIds = theConfirms.map((doc) => {
@@ -2316,86 +2287,15 @@ class App extends React.Component {
       })
       .finally(() => client.disconnect());
   };
-  //
-  //BELOW - should not need.
-  // getYourRsrvsRepliesNames = (docArray, theDocArray) => {
-  //   const clientOpts = {
-  //     network: this.state.whichNetwork,
-  //     apps: {
-  //       DPNS: {
-  //         contractId: this.state.DataContractDPNS,
-  //       },
-  //     },
-  //   };
-  //   const client = new Dash.Client(clientOpts);
-  //   //START OF NAME RETRIEVAL
-
-  //   let ownerarrayOfOwnerIds = docArray.map((doc) => {
-  //     return doc.$ownerId;
-  //   });
-
-  //   let setOfOwnerIds = [...new Set(ownerarrayOfOwnerIds)];
-
-  //   let arrayOfOwnerIds = [...setOfOwnerIds];
-
-  //   //console.log("Calling getNamesforRideReplies");
-
-  //   const getNameDocuments = async () => {
-  //     return client.platform.documents.get("DPNS.domain", {
-  //       where: [["records.dashUniqueIdentityId", "in", arrayOfOwnerIds]],
-  //       orderBy: [["records.dashUniqueIdentityId", "asc"]],
-  //     });
-  //   };
-
-  //   getNameDocuments()
-  //     .then((d) => {
-  //       if (d.length === 0) {
-  //         //console.log("No DPNS domain documents retrieved.");
-  //       }
-
-  //       let nameDocArray = [];
-
-  //       for (const n of d) {
-  //         //console.log("NameDoc:\n", n.toJSON());
-  //         nameDocArray = [n.toJSON(), ...nameDocArray];
-  //       }
-  //       //console.log(`DPNS Name Docs: ${nameDocArray}`);
-
-  //       // this.setState({
-  //       //   YourRides: theDocArray,
-  //       //   YourRideReplies: docArray,
-  //       //   YourRideReplyNames: nameDocArray,
-  //       //   isLoadingYourRides: false,
-  //       // });
-
-  //       this.getYourRideRepliesDGMAddresses(
-  //         theDocArray,
-  //         docArray,
-  //         nameDocArray
-  //       );
-  //     })
-  //     .catch((e) => {
-  //       console.error(
-  //         "Something went wrong getting YourRideReplies Names:\n",
-  //         e
-  //       );
-  //     })
-  //     .finally(() => client.disconnect());
-  //   //END OF NAME RETRIEVAL
-  // };
 
   //SETTIMEOUT WAY BELOW
-  //FUNCTION TO CHANGE STATE AND ALLOW BUTTON TO BE PRESSED
 
   allowYourRsrvsRefresh = () => {
     this.setState({
       isYourRsrvsRefreshReady: true,
     });
   };
-
-  // //FUNCTION FOR BUTTON TO TRIGGER - CHANGES STATE AND GOES AND LOOKS UP AND SETS STATE DIRECTLY.
-  // //update below
-
+  //FUNCTION FOR BUTTON TO TRIGGER - CHANGES STATE AND GOES AND LOOKS UP AND SETS STATE DIRECTLY.
   refreshYourRsrvs = () => {
     this.setState({
       isLoadingRequests: true,
@@ -2403,6 +2303,7 @@ class App extends React.Component {
     });
 
     this.getYourRsrvs(this.state.identity);
+    //
 
     //REFRESH -> TIMEOUT
     //if (!this.state.isYourRsrvsRefreshReady) {
@@ -2411,17 +2312,890 @@ class App extends React.Component {
     //REFRESH -> TIMEOUT
   };
 
+  handleCustomerReplyModalShow = (theConfirm, nameDoc) => {
+    this.setState(
+      {
+        selectedConfirm: theConfirm,
+        selectedReplyNameDoc: nameDoc,
+      },
+      () => this.showModal("CustomerReplyModal")
+    );
+  };
+
+  createCustomerReply = (replyMsgComment) => {
+    //console.log("Called Your Drive Message Submit: ", replyMsgComment);
+
+    this.setState({
+      isLoadingRequests: true,
+    });
+
+    const client = new Dash.Client(
+      dapiClient(
+        this.state.whichNetwork,
+        this.state.mnemonic,
+        this.state.skipSynchronizationBeforeHeight
+      )
+    );
+
+    const submitMsgDoc = async () => {
+      const { platform } = client;
+
+      let identity = "";
+      if (this.state.identityRaw !== "") {
+        identity = this.state.identityRaw;
+      } else {
+        identity = await platform.identities.get(this.state.identity);
+      }
+
+      const replyProperties = {
+        //toId
+        confirmId: this.state.selectedYourDrive.$id,
+        msg: replyMsgComment,
+      };
+      //console.log('Reply to Create: ', replyProperties);
+
+      // Create the note document
+      const radDocument = await platform.documents.create(
+        "RENTALSContract.reply",
+        identity,
+        replyProperties
+      );
+
+      //############################################################
+      //This below disconnects the document sending..***
+
+      //return radDocument;
+
+      //This is to disconnect the Document Creation***
+      //############################################################
+
+      const documentBatch = {
+        create: [radDocument], // Document(s) to create
+      };
+
+      await platform.documents.broadcast(documentBatch, identity);
+      return radDocument;
+    };
+
+    submitMsgDoc()
+      .then((d) => {
+        let returnedDoc = d.toJSON();
+        console.log("Document:\n", returnedDoc);
+
+        // returnedDoc.reqId = Identifier.from(
+        //   returnedDoc.reqId,
+        //   "base64"
+        // ).toJSON();
+
+        let rideReply = {
+          $ownerId: returnedDoc.$ownerId,
+          $id: returnedDoc.$id,
+          $createdAt: returnedDoc.$createdAt,
+          amt: 0,
+          //toId
+          reqId: returnedDoc.reqId,
+          msg: replyMsgComment,
+        };
+
+        this.setState(
+          {
+            //YourDrives: [rideReply, ...this.state.YourDrives],
+            YourDrivesRequestsReplies: [
+              rideReply,
+              ...this.state.YourDrivesRequestsReplies,
+            ],
+            isLoadingYourDrives: false,
+          },
+          () => this.loadIdentityCredits()
+        );
+      })
+      .catch((e) => {
+        console.error(
+          "Something went wrong with Your Drive Reply Msg creation:\n",
+          e
+        );
+      })
+      .finally(() => client.disconnect());
+  };
+
   //SETTIMEOUT WAY ^^^^
 
   /*
-  *CUSTOMER FUNCTIONS^^^^
-   *                             #############
-   *                            ####         ##
-   *                            ###
-   *                            ###     
-   *                            #####        ##
-   *                             #############
+   *CUSTOMER FUNCTIONS^^^^
+   *                                 #############
+   *                                ####         ##
+   *                                ###
+   *                                ###
+   *                                #####        ##
+   *                                 #############
+   *
+   *
+   *      ################
+   *      ###          ####
+   *      ################
+   *      ###          ####
+   *      ###           ####
+   *
+   */
+  //REVIEWS FUNCTIONS
+  handleEditReview = (review, index) => {
+    this.setState(
+      {
+        reviewToEdit: review,
+        reviewToEditIndex: index,
+      },
+      () => this.showModal("EditReviewModal")
+    );
+  };
+
+  //PUT THE QUERY SEARCHES HERE
+  //WHEN TO PULL? ->
+  startSearch_REVIEW = (theRentals) => {
+    //Called from  ->
+    this.getSearchReviews(theRentals);
+  };
+
+  searchReviewsRace = () => {
+    if (this.state.SearchReviews1 && this.state.SearchReviews2) {
+      this.setState({
+        SearchReviews1: false,
+        SearchReviews2: false,
+        //DONT HAVE TO ADD STATE TO PUSH TO DISPLAY BECAUSE THE REVIEWS AND NAMES PUSHED TOGETHER AND THEN THREADS APPEAR <- SO DO I WANT TO QUERY NAME FIRST THEN?
+        isLoadingReviewsSearch: false,
+      });
+    }
+  };
+
+  getSearchReviews = (theIdentity) => {
+    //console.log("Calling getSearchReviews");
+
+    const client = new Dash.Client(dapiClientNoWallet(this.state.whichNetwork));
+
+    const getDocuments = async () => {
+      return client.platform.documents.get("DGRContract.dgrreview", {
+        where: [
+          ["toId", "==", theIdentity],
+          ["$createdAt", "<=", Date.now()],
+        ],
+        orderBy: [["$createdAt", "desc"]],
+      });
+    };
+
+    getDocuments()
+      .then((d) => {
+        if (d.length === 0) {
+          //console.log("There are no SearchReviews");
+
+          this.setState(
+            {
+              SearchReviews1: true,
+              SearchReviews2: true,
+              SearchedReviews: [],
+            },
+            () => this.searchReviewsRace()
+          );
+        } else {
+          let docArray = [];
+          //console.log("Getting Search Reviews");
+
+          for (const n of d) {
+            let returnedDoc = n.toJSON();
+            //console.log("Review:\n", returnedDoc);
+            returnedDoc.toId = Identifier.from(
+              returnedDoc.toId,
+              "base64"
+            ).toJSON();
+            //console.log("newReview:\n", returnedDoc);
+            docArray = [...docArray, returnedDoc];
+          }
+          this.getSearchReviewNames(docArray);
+          this.getSearchReplies(docArray);
+        }
+      })
+      .catch((e) => console.error("Something went wrong:\n", e))
+      .finally(() => client.disconnect());
+  };
+
+  getSearchReviewNames = (docArray) => {
+    const client = new Dash.Client(dapiClientNoWallet(this.state.whichNetwork));
+    //START OF NAME RETRIEVAL
+
+    let ownerarrayOfOwnerIds = docArray.map((doc) => {
+      return doc.$ownerId;
+    });
+
+    let setOfOwnerIds = [...new Set(ownerarrayOfOwnerIds)];
+
+    let arrayOfOwnerIds = [...setOfOwnerIds];
+
+    // Start of Setting Unique reviews
+    let arrayOfReviews = arrayOfOwnerIds.map((id) => {
+      return docArray.find((doc) => id === doc.$ownerId);
+    });
+    // End of Setting Unique reviews
+
+    // arrayOfOwnerIds = arrayOfOwnerIds.map((item) =>
+    //   Buffer.from(Identifier.from(item))
+    // );
+
+    //console.log("Calling getNamesforDSOmsgs");
+
+    const getNameDocuments = async () => {
+      return client.platform.documents.get("DPNSContract.domain", {
+        where: [["records.identity", "in", arrayOfOwnerIds]],
+        orderBy: [["records.identity", "asc"]],
+      });
+    };
+
+    getNameDocuments()
+      .then((d) => {
+        //WHAT IF THERE ARE NO NAMES? -> THEN THIS WON'T BE CALLED
+        if (d.length === 0) {
+          //console.log("No DPNS domain documents retrieved.");
+        }
+
+        let nameDocArray = [];
+
+        for (const n of d) {
+          //console.log("NameDoc:\n", n.toJSON());
+
+          nameDocArray = [n.toJSON(), ...nameDocArray];
+        }
+        //console.log(`DPNS Name Docs: ${nameDocArray}`);
+
+        this.setState(
+          {
+            SearchedReviewNames: nameDocArray,
+            SearchedReviews: arrayOfReviews, //This is a unique set of reviews only single review per reviewer
+            SearchReviews1: true,
+          },
+          () => this.searchReviewsRace()
+        );
+      })
+      .catch((e) => {
+        console.error("Something went wrong getting Search Names:\n", e);
+      })
+      .finally(() => client.disconnect());
+    //END OF NAME RETRIEVAL
+  };
+
+  getSearchReplies = (docArray) => {
+    const client = new Dash.Client(dapiClientNoWallet(this.state.whichNetwork));
+
+    // This Below is to get unique set of ByYou review doc ids
+    let arrayOfReviewIds = docArray.map((doc) => {
+      return doc.$id;
+    });
+
+    //console.log("Array of ByYouThreads ids", arrayOfReviewIds);
+
+    let setOfReviewIds = [...new Set(arrayOfReviewIds)];
+
+    arrayOfReviewIds = [...setOfReviewIds];
+
+    //console.log("Array of order ids", arrayOfReviewIds);
+
+    const getDocuments = async () => {
+      //console.log("Called Get Search Replies");
+
+      return client.platform.documents.get("DGRContract.dgrreply", {
+        where: [["reviewId", "in", arrayOfReviewIds]], // check reviewId ->
+        orderBy: [["reviewId", "asc"]],
+      });
+    };
+
+    getDocuments()
+      .then((d) => {
+        let docArray = [];
+
+        for (const n of d) {
+          let returnedDoc = n.toJSON();
+          //console.log("Thr:\n", returnedDoc);
+          returnedDoc.reviewId = Identifier.from(
+            returnedDoc.reviewId,
+            "base64"
+          ).toJSON();
+          //console.log("newThr:\n", returnedDoc);
+          docArray = [...docArray, returnedDoc];
+        }
+
+        this.setState(
+          {
+            SearchReviews2: true,
+            SearchedReplies: docArray,
+          },
+          () => this.searchReviewsRace()
+        );
+      })
+      .catch((e) => {
+        console.error("Something went wrong Search Replies:\n", e);
+      })
+      .finally(() => client.disconnect());
+  };
+
+  pullInitialTriggerREVIEWS = () => {
+    this.getYourReviews(this.state.identity);
+    this.setState({
+      InitialPullReviews: false,
+    });
+  };
+
+  yourReviewsRace = () => {
+    if (this.state.YourReviews1 && this.state.YourReviews2) {
+      this.setState({
+        YourReviews1: false,
+        YourReviews2: false,
+
+        isLoadingYourReviews: false,
+      });
+    }
+  };
+
+  getYourReviews = (theIdentity) => {
+    //console.log("Calling getYourReviews");
+
+    const client = new Dash.Client(dapiClientNoWallet(this.state.whichNetwork));
+
+    const getDocuments = async () => {
+      return client.platform.documents.get("DGRContract.dgrreview", {
+        where: [
+          ["toId", "==", theIdentity],
+          ["$createdAt", "<=", Date.now()],
+        ],
+        orderBy: [["$createdAt", "desc"]],
+      });
+    };
+
+    getDocuments()
+      .then((d) => {
+        if (d.length === 0) {
+          //console.log("There are no YourReviews");
+
+          this.setState(
+            {
+              YourReviews1: true,
+              YourReviews2: true,
+            },
+            () => this.yourReviewsRace()
+          );
+        } else {
+          let docArray = [];
+          //console.log("Getting YourReviews Reviews");
+
+          for (const n of d) {
+            let returnedDoc = n.toJSON();
+            //console.log("Review:\n", returnedDoc);
+            returnedDoc.toId = Identifier.from(
+              returnedDoc.toId,
+              "base64"
+            ).toJSON();
+            //console.log("newReview:\n", returnedDoc);
+            docArray = [...docArray, returnedDoc];
+          }
+          this.getYourReviewNames(docArray);
+          this.getYourReplies(docArray);
+        }
+      })
+      .catch((e) => console.error("Something went wrong:\n", e))
+      .finally(() => client.disconnect());
+  };
+
+  getYourReviewNames = (docArray) => {
+    const client = new Dash.Client(dapiClientNoWallet(this.state.whichNetwork));
+    //START OF NAME RETRIEVAL
+
+    let ownerarrayOfOwnerIds = docArray.map((doc) => {
+      return doc.$ownerId;
+    });
+
+    let setOfOwnerIds = [...new Set(ownerarrayOfOwnerIds)];
+
+    let arrayOfOwnerIds = [...setOfOwnerIds];
+
+    // arrayOfOwnerIds = arrayOfOwnerIds.map((item) =>
+    //   Buffer.from(Identifier.from(item))
+    // );
+
+    //console.log("Calling getNamesforDSOmsgs");
+
+    const getNameDocuments = async () => {
+      return client.platform.documents.get("DPNSContract.domain", {
+        where: [["records.identity", "in", arrayOfOwnerIds]],
+        orderBy: [["records.identity", "asc"]],
+      });
+    };
+
+    getNameDocuments()
+      .then((d) => {
+        //WHAT IF THERE ARE NO NAMES? -> THEN THIS WON'T BE CALLED
+        if (d.length === 0) {
+          //console.log("No DPNS domain documents retrieved.");
+        }
+
+        let nameDocArray = [];
+
+        for (const n of d) {
+          //console.log("NameDoc:\n", n.toJSON());
+
+          nameDocArray = [n.toJSON(), ...nameDocArray];
+        }
+        //console.log(`DPNS Name Docs: ${nameDocArray}`);
+
+        this.setState(
+          {
+            YourReviewNames: nameDocArray,
+            YourReviews: docArray,
+            YourReviews1: true,
+          },
+          () => this.yourReviewsRace()
+        );
+      })
+      .catch((e) => {
+        console.error("Something went wrong getting YourReview Names:\n", e);
+      })
+      .finally(() => client.disconnect());
+    //END OF NAME RETRIEVAL
+  };
+
+  getYourReplies = (docArray) => {
+    const client = new Dash.Client(dapiClientNoWallet(this.state.whichNetwork));
+
+    // This Below is to get unique set of ByYou review doc ids
+    let arrayOfReviewIds = docArray.map((doc) => {
+      return doc.$id;
+    });
+
+    //console.log("Array of ByYouThreads ids", arrayOfReviewIds);
+
+    let setOfReviewIds = [...new Set(arrayOfReviewIds)];
+
+    arrayOfReviewIds = [...setOfReviewIds];
+
+    //console.log("Array of order ids", arrayOfReviewIds);
+
+    const getDocuments = async () => {
+      //console.log("Called Get Search Replies");
+
+      return client.platform.documents.get("DGRContract.dgrreply", {
+        where: [["reviewId", "in", arrayOfReviewIds]], // check reviewId ->
+        orderBy: [["reviewId", "asc"]],
+      });
+    };
+
+    getDocuments()
+      .then((d) => {
+        let docArray = [];
+
+        for (const n of d) {
+          let returnedDoc = n.toJSON();
+          //console.log("Thr:\n", returnedDoc);
+          returnedDoc.reviewId = Identifier.from(
+            returnedDoc.reviewId,
+            "base64"
+          ).toJSON();
+          //console.log("newThr:\n", returnedDoc);
+          docArray = [...docArray, returnedDoc];
+        }
+
+        this.setState(
+          {
+            YourReviews2: true,
+            YourReplies: docArray,
+          },
+          () => this.yourReviewsRace()
+        );
+      })
+      .catch((e) => {
+        console.error("Something went wrong Search Replies:\n", e);
+      })
+      .finally(() => client.disconnect());
+  };
+
+  handleYourReply = (reviewDoc, revieweeLabel) => {
+    //First search and see if there is already a reply for the review
+    let replyDoc = this.state.YourReplies.find((doc) => {
+      return doc.reviewId === reviewDoc.$id;
+    });
+
+    if (replyDoc !== undefined) {
+      this.setState(
+        {
+          replyReview: reviewDoc,
+          replyToEdit: replyDoc,
+          replyingToName: revieweeLabel,
+        },
+        () => this.showModal("EditReplyModal")
+      );
+    } else {
+      this.setState(
+        {
+          replyReview: reviewDoc,
+          replyToEdit: [],
+          replyingToName: revieweeLabel,
+        },
+        () => this.showModal("CreateReplyModal")
+      );
+    }
+  };
+
+  createReview = (reviewObject) => {
+    console.log("Called Create Review");
+
+    this.setState({
+      isLoadingReviewsSearch: true,
+    });
+
+    const client = new Dash.Client(
+      dapiClient(
+        this.state.whichNetwork,
+        this.state.mnemonic,
+        this.state.skipSynchronizationBeforeHeight
+      )
+    );
+
+    const submitReviewDoc = async () => {
+      const { platform } = client;
+
+      let identity = "";
+      if (this.state.identityRaw !== "") {
+        identity = this.state.identityRaw;
+      } else {
+        identity = await platform.identities.get(this.state.identity);
+      }
+
+      const reviewProperties = {
+        toId: this.state.SearchedNameDoc.$ownerId,
+        review: reviewObject.review,
+        rating: reviewObject.rating,
+      };
+      //console.log('Review to Create: ', reviewProperties);
+
+      // Create the note document
+      const dgrDocument = await platform.documents.create(
+        "DGRContract.dgrreview",
+        identity,
+        reviewProperties
+      );
+
+      //############################################################
+      //This below disconnects the document sending..***
+
+      // return dgrDocument;
+
+      //This is to disconnect the Document Creation***
+      //############################################################
+
+      const documentBatch = {
+        create: [dgrDocument], // Document(s) to create
+      };
+
+      await platform.documents.broadcast(documentBatch, identity);
+      return dgrDocument;
+    };
+
+    submitReviewDoc()
+      .then((d) => {
+        let returnedDoc = d.toJSON();
+        console.log("Document:\n", returnedDoc);
+
+        let review = {
+          $ownerId: returnedDoc.$ownerId,
+          $id: returnedDoc.$id,
+
+          review: reviewObject.review,
+          rating: reviewObject.rating,
+
+          $createdAt: returnedDoc.$createdAt,
+        };
+
+        this.setState(
+          {
+            SearchedReviews: [review, ...this.state.SearchedReviews],
+            isLoadingReviewsSearch: false,
+          },
+          () => this.sendFrontendFee()
+        );
+      })
+      .catch((e) => {
+        console.error("Something went wrong with review creation:\n", e);
+      })
+      .finally(() => client.disconnect());
+
+    //THIS BELOW IS THE NAME DOC ADD, SO PROCESSES DURING DOC SUBMISSION ***
+    let nameDoc = {
+      $ownerId: this.state.identity,
+      label: this.state.uniqueName,
+    };
+
+    this.setState({
+      SearchedReviewNames: [nameDoc, ...this.state.SearchedReviewNames],
+    });
+    //END OF NAME DOC ADD***
+  };
+
+  editReview = (reviewObject) => {
+    console.log("Called Edit Review");
+
+    this.setState({
+      isLoadingReviewsSearch: true,
+    });
+
+    const client = new Dash.Client(
+      dapiClient(
+        this.state.whichNetwork,
+        this.state.mnemonic,
+        this.state.skipSynchronizationBeforeHeight
+      )
+    );
+
+    const submitReviewDoc = async () => {
+      const { platform } = client;
+
+      let identity = "";
+      if (this.state.identityRaw !== "") {
+        identity = this.state.identityRaw;
+      } else {
+        identity = await platform.identities.get(this.state.identity);
+      }
+
+      const [document] = await client.platform.documents.get(
+        "DGRContract.dgrreview",
+        {
+          where: [["$id", "==", this.state.reviewToEdit.$id]],
+        }
+      );
+
+      if (this.state.reviewToEdit.review !== reviewObject.review) {
+        document.set("review", reviewObject.review);
+      }
+
+      if (this.state.reviewToEdit.rating !== reviewObject.rating) {
+        document.set("review", reviewObject.rating);
+      }
+
+      await platform.documents.broadcast({ replace: [document] }, identity);
+      return document;
+
+      //############################################################
+      //This below disconnects the document editing..***
+
+      //return document;
+
+      //This is to disconnect the Document editing***
+      //############################################################
+    };
+
+    submitReviewDoc()
+      .then((d) => {
+        let returnedDoc = d.toJSON();
+        console.log("Edited Review Doc:\n", returnedDoc);
+
+        let review = {
+          $ownerId: returnedDoc.$ownerId,
+          $id: returnedDoc.$id,
+
+          review: reviewObject.review,
+          rating: reviewObject.rating,
+
+          $createdAt: returnedDoc.$createdAt,
+          $updatedAt: returnedDoc.$updatedAt,
+        };
+
+        let editedReviews = this.state.SearchedReviews;
+
+        editedReviews.splice(this.state.reviewToEditIndex, 1, review);
+
+        this.setState(
+          {
+            SearchedReviews: editedReviews,
+            isLoadingReviewsSearch: false,
+          },
+          () => this.loadIdentityCredits()
+        );
+      })
+      .catch((e) => {
+        console.error("Something went wrong with review edit:\n", e);
+      })
+      .finally(() => client.disconnect());
+  };
+
+  createReply = (replyObject) => {
+    console.log("Called Create Reply");
+
+    this.setState({
+      isLoadingYourReviews: true,
+    });
+
+    const client = new Dash.Client(
+      dapiClient(
+        this.state.whichNetwork,
+        this.state.mnemonic,
+        this.state.skipSynchronizationBeforeHeight
+      )
+    );
+
+    const submitReviewDoc = async () => {
+      const { platform } = client;
+
+      let identity = "";
+      if (this.state.identityRaw !== "") {
+        identity = this.state.identityRaw;
+      } else {
+        identity = await platform.identities.get(this.state.identity);
+      }
+
+      const replyProperties = {
+        reviewId: this.state.replyReview.$id,
+        reply: replyObject.reply,
+      };
+      //console.log('Reply to Create: ', replyProperties);
+
+      // Create the note document
+      const dgrDocument = await platform.documents.create(
+        "DGRContract.dgrreply",
+        identity,
+        replyProperties
+      );
+
+      //############################################################
+      //This below disconnects the document sending..***
+
+      // return dgrDocument;
+
+      //This is to disconnect the Document Creation***
+      //############################################################
+
+      const documentBatch = {
+        create: [dgrDocument], // Document(s) to create
+      };
+
+      await platform.documents.broadcast(documentBatch, identity);
+      return dgrDocument;
+    };
+
+    submitReviewDoc()
+      .then((d) => {
+        let returnedDoc = d.toJSON();
+        console.log("Document:\n", returnedDoc);
+
+        let reply = {
+          $ownerId: returnedDoc.$ownerId,
+          $id: returnedDoc.$id,
+          $createdAt: returnedDoc.$createdAt,
+
+          reviewId: this.state.replyReview.$id,
+          reply: replyObject.reply,
+        };
+
+        this.setState(
+          {
+            YourReplies: [reply, ...this.state.YourReplies],
+            isLoadingYourReviews: false,
+          },
+          () => this.loadIdentityCredits()
+        );
+      })
+      .catch((e) => {
+        console.error("Something went wrong with reply creation:\n", e);
+      })
+      .finally(() => client.disconnect());
+  };
+
+  editReply = (replyObject) => {
+    console.log("Called Edit Reply");
+
+    this.setState({
+      isLoadingYourReviews: true,
+    });
+
+    const client = new Dash.Client(
+      dapiClient(
+        this.state.whichNetwork,
+        this.state.mnemonic,
+        this.state.skipSynchronizationBeforeHeight
+      )
+    );
+
+    const submitReplyDoc = async () => {
+      const { platform } = client;
+
+      let identity = "";
+      if (this.state.identityRaw !== "") {
+        identity = this.state.identityRaw;
+      } else {
+        identity = await platform.identities.get(this.state.identity);
+      }
+
+      const [document] = await client.platform.documents.get(
+        "DGRContract.dgrreply",
+        {
+          where: [["$id", "==", this.state.replyToEdit.$id]],
+        }
+      );
+
+      if (this.state.replyToEdit.reply !== replyObject.reply) {
+        document.set("reply", replyObject.reply);
+      }
+
+      await platform.documents.broadcast({ replace: [document] }, identity);
+      return document;
+
+      //############################################################
+      //This below disconnects the document editing..***
+
+      //return document;
+
+      //This is to disconnect the Document editing***
+      //############################################################
+    };
+
+    submitReplyDoc()
+      .then((d) => {
+        let returnedDoc = d.toJSON();
+        console.log("Edited Reply Doc:\n", returnedDoc);
+
+        let editedReply = {
+          $ownerId: returnedDoc.$ownerId,
+          $id: returnedDoc.$id,
+          $updatedAt: returnedDoc.$updatedAt,
+          $createdAt: returnedDoc.$createdAt,
+
+          reviewId: this.state.replyReview.$id,
+          reply: replyObject.reply,
+        };
+
+        let indexOfReply = this.state.YourReplies.findIndex((reply) => {
+          return reply.$id === editedReply.$id;
+        });
+
+        let editedReplies = this.state.YourReplies;
+
+        editedReplies.splice(indexOfReply, 1, editedReply);
+
+        this.setState(
+          {
+            YourReplies: editedReplies,
+            isLoadingYourReviews: false,
+          },
+          () => this.loadIdentityCredits()
+        );
+      })
+      .catch((e) => {
+        console.error("Something went wrong with reply creation:\n", e);
+      })
+      .finally(() => client.disconnect());
+  };
+
+  /*
+  *REVIEWS FUNCTIONS^^^^
   
+   * 
+   *      ################
+   *      ###          ####
+   *      ################
+   *      ###          ####
+   *      ###           ####
+   *
    */
 
   loadIdentityCredits = () => {
@@ -2431,7 +3205,7 @@ class App extends React.Component {
       identityInfo: "",
     });
 
-    const client = new Dash.Client({ network: this.state.whichNetwork });
+    const client = new Dash.Client(dapiClientNoWallet(this.state.whichNetwork));
 
     const retrieveIdentity = async () => {
       return client.platform.identities.get(this.state.identity); // Your identity ID
@@ -2573,6 +3347,10 @@ class App extends React.Component {
                         isLoginComplete={isLoginComplete}
                         isLoadingRentals={this.state.isLoadingRentals}
                         isLoadingRequests={this.state.isLoadingRequests}
+                        isMerchantRequestsRefreshReady={
+                          this.state.isMerchantRequestsRefreshReady
+                        }
+                        refreshMerchantRequests={this.refreshMerchantRequests}
                         Rentals={this.state.Rentals}
                         RentalRequests={this.state.RentalRequests}
                         RentalConfirms={this.state.RentalConfirms}
@@ -2705,6 +3483,7 @@ class App extends React.Component {
                         RentalRequests={this.state.RentalRequests}
                         //
                         MerchantId={this.state.MerchantId}
+                        MerchantNameDoc={this.state.MerchantNameDoc}
                         DataContractRENTALS={this.state.DataContractRENTALS}
                         whichNetwork={this.state.whichNetwork}
                         //
@@ -2728,9 +3507,16 @@ class App extends React.Component {
                         // InitialPullCustomer={this.state.InitialPullCustomer}
                         isLoadingRentals={this.state.isLoadingRentals}
                         isLoadingRequests={this.state.isLoadingRequests}
+                        isYourRsrvsRefreshReady={
+                          this.state.isYourRsrvsRefreshReady
+                        }
+                        refreshYourRsrvs={this.refreshYourRsrvs}
                         Rentals={this.state.Rentals}
                         RentalRequests={this.state.RentalRequests}
                         RentalConfirms={this.state.RentalConfirms}
+                        RentalReplies={this.state.RentalReplies}
+                        MerchantNameDoc={this.state.MerchantNameDoc}
+                        //
                         handleSelectedRental={this.handleSelectedRental}
                         identity={this.state.identity}
                         identityInfo={this.state.identityInfo}
@@ -2851,46 +3637,6 @@ class App extends React.Component {
           <></>
         )}
 
-        {/* THIS ^^^^ WAS THE MY STORE ONE */}
-        {this.state.isModalShowing &&
-        this.state.presentModal === "WalletTXModal" ? (
-          <WalletTXModal
-            isModalShowing={this.state.isModalShowing}
-            hideModal={this.hideModal}
-            mode={this.state.mode}
-            accountHistory={this.state.accountHistory}
-            accountBalance={this.state.accountBalance}
-            WALLET_addresses={this.state.WALLET_addresses}
-            WALLET_addressesNames={this.state.WALLET_addressesNames}
-            ByYouMsgs={this.state.WALLET_ByYouMsgs}
-            ByYouNames={this.state.WALLET_ByYouNames}
-            ToYouMsgs={this.state.WALLET_ToYouMsgs}
-            ToYouNames={this.state.WALLET_ToYouNames}
-            //My Store
-            LoadingOrders={this.state.isLoadingOrdersYOURSTORE}
-            DGPOrders={this.state.DGPOrders}
-            DGPOrdersNames={this.state.DGPOrdersNames}
-            //My Store^^
-            isLoadingAddresses_WALLET={this.state.isLoadingAddresses_WALLET}
-            isLoadingMsgs={this.state.isLoadingMsgs_WALLET}
-            //MyStore and Shopping use TXId to connect name to Tx but does the address pull already accomplish this for shopping <= yes
-            //Shopping
-            /*
-              isLoadingRecentOrders: true,
-              recentOrders: [],
-              recentOrdersStores: [],
-              recentOrdersNames: [],
-              recentOrdersDGMAddresses: [],
-              recentOrdersItems: [],
-              recentOrdersMessages: [],
-             */
-            //Shopping^^
-            //sortedTuples={sortedTuples} // <= this is made in the WalletTXModal -> yes
-            // So this should only be gotten too after wallet and msgs are loaded.. ->
-          />
-        ) : (
-          <></>
-        )}
         {this.state.isModalShowing &&
         this.state.presentModal === "MakeRequestModal" ? (
           <MakeRequestModal
@@ -2943,6 +3689,40 @@ class App extends React.Component {
         ) : (
           <></>
         )}
+
+        {this.state.isModalShowing &&
+        this.state.presentModal === "CustomerReplyModal" ? (
+          <CustomerReplyModal
+            isModalShowing={this.state.isModalShowing}
+            hideModal={this.hideModal}
+            mode={this.state.mode}
+            MerchantNameDoc={this.state.MerchantNameDoc}
+            //selectedRequest
+
+            createCustomerReply={this.createCustomerReply}
+            closeTopNav={this.closeTopNav}
+          />
+        ) : (
+          <></>
+        )}
+
+        {/* {this.state.isModalShowing &&
+        this.state.presentModal === "MerchantReplyModal" ? (
+          <MerchantReplyModal
+            isModalShowing={this.state.isModalShowing}
+            hideModal={this.hideModal}
+            mode={this.state.mode}
+            
+            //selectedRequest
+            //uniqueName={this.state.}
+            //List of names for the requests!!
+            //
+            createMerchantReply={this.createMerchantReply}
+            closeTopNav={this.closeTopNav}
+          />
+        ) : (
+          <></>
+        )} */}
       </>
     );
   }

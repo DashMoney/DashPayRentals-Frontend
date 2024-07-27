@@ -38,22 +38,10 @@ class YourRentalsPage extends React.Component {
             ) : (
               <>
                 <div className="paddingBadge">
-                  <div className="cardTitle">
-                    <div>
-                      <b>Wallet Balance</b>
-                      <h4 style={{ color: "#008de4" }}>
-                        <b>
-                          {handleDenomDisplay(this.props.accountBalance, 1)}
-                        </b>
-                      </h4>
-                    </div>
-                    <Button
-                      variant="primary"
-                      onClick={() => this.props.showModal("WalletTXModal")}
-                    >
-                      <b>Wallet TXs</b>
-                    </Button>
-                  </div>
+                  <b>Wallet Balance</b>
+                  <h4 style={{ color: "#008de4" }}>
+                    <b>{handleDenomDisplay(this.props.accountBalance, 1)}</b>
+                  </h4>
                 </div>
               </>
             )}
