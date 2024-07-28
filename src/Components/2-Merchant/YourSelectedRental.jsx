@@ -133,11 +133,21 @@ class YourSelectedRental extends React.Component {
   //    -> CHAINED TO QUERY CONFIRM OF REQUEST
   //Or just pass here and filter... <-!!
 
-  // componentDidMount() {
-  // if (this.props.isLoginComplete && this.props.InitialPullReviews) {
-  //   this.props.pullInitialTriggerREVIEWS();
-  // }
-  //  }
+  //https://stackoverflow.com/questions/37620694/how-to-scroll-to-bottom-in-react
+  scrollToTop = () => {
+    this.positionStart.scrollIntoView({
+      behavior: "instant",
+      block: "start",
+      inline: "nearest",
+    });
+  };
+
+  componentDidMount() {
+    this.scrollToTop();
+    // if (this.props.isLoginComplete && this.props.InitialPullReviews) {
+    //   this.props.pullInitialTriggerREVIEWS();
+    // }
+  }
   render() {
     let today = new Date();
     let yesterday = new Date(today);
@@ -203,7 +213,12 @@ class YourSelectedRental extends React.Component {
     }
     return (
       <>
-        <div className="bodytext">
+        <div
+          className="bodytext"
+          ref={(el) => {
+            this.positionStart = el;
+          }}
+        >
           <LowCreditsOnPage
             identityInfo={this.props.identityInfo}
             uniqueName={this.props.uniqueName}
