@@ -4,7 +4,7 @@ import Spinner from "react-bootstrap/Spinner";
 import Button from "react-bootstrap/Button";
 import CreditsOnPage from "../CreditsOnPage";
 
-import Calender from "./CalenderComponents/Calendar";
+import Calendar from "./CalendarComponents/Calendar";
 
 import handleDenomDisplay from "../UnitDisplay";
 
@@ -79,8 +79,7 @@ class YourRentalsPage extends React.Component {
           ) : (
             <></>
           )}
-          {/* <p></p>
-          <Calender mode={this.props.mode} /> */}
+
           <p></p>
           <YourRentals
             Rentals={this.props.Rentals}

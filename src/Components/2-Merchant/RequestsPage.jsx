@@ -67,6 +67,8 @@ class RequestsPage extends React.Component {
                 Rentals={this.props.Rentals}
                 RentalRequests={this.props.RentalRequests}
                 RentalConfirms={this.props.RentalConfirms}
+                RentalRequestsNames={this.props.RentalRequestsNames}
+                RentalReplies={this.props.RentalReplies}
                 //
                 handleSelectedRental={this.props.handleSelectedRental}
                 handleConfirmRequestModal={this.props.handleConfirmRequestModal}

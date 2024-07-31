@@ -13,7 +13,7 @@ import LowCreditsOnPage from "../LowCreditsOnPage";
 import formatDate from "../TimeDisplayShort";
 import handleDenomDisplay from "../UnitDisplay";
 
-import Calender from "../2-Merchant/CalenderComponents/Calendar";
+import Calendar from "../2-Merchant/CalendarComponents/Calendar";
 
 import { IoMdArrowRoundBack } from "react-icons/io";
 
@@ -179,13 +179,13 @@ class SelectedRentalPage extends React.Component {
     //let dateMin = dateNow.toISOString().slice(0, 10);
     let dateMin = Date.now() - 55000000;
     let dateMinForm = new Date(dateMin).toISOString().slice(0, 10);
-    //console.log(dateMin);
+    //console.log(dateMinForm);
 
     //let dateMax = new Date(Date.now() + 7776000000);
     // dateMax = dateMax.toISOString().slice(0, 10);
     let dateMax = Date.now() + this.props.rental.howFarAhead * 86400000;
     let dateMaxForm = new Date(dateMax).toISOString().slice(0, 10);
-    //console.log(dateMax);
+    //console.log(dateMaxForm);
     //ISO DATE FORMATE
     //min = "2000-01-02"; //FARTHEST FORWARD
 
@@ -332,7 +332,7 @@ class SelectedRentalPage extends React.Component {
           <p></p>
 
           {/* Schedule */}
-          <Calender
+          <Calendar
             mode={this.props.mode}
             rental={this.props.rental}
             MerchantId={this.props.MerchantId}

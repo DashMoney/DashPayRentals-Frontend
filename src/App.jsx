@@ -3354,6 +3354,8 @@ class App extends React.Component {
                         Rentals={this.state.Rentals}
                         RentalRequests={this.state.RentalRequests}
                         RentalConfirms={this.state.RentalConfirms}
+                        RentalRequestsNames={this.state.RentalRequestsNames}
+                        RentalReplies={this.state.RentalReplies}
                         handleSelectedRental={this.handleSelectedRental}
                         handleConfirmRequestModal={
                           this.handleConfirmRequestModal

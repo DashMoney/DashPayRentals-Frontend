@@ -84,6 +84,8 @@ class Requests extends React.Component {
               Rentals={this.props.Rentals}
               // RentalRequests={this.props.RentalRequests}
               RentalConfirms={rsrvConfirms}
+              RentalRequestsNames={this.props.RentalRequestsNames}
+              RentalReplies={this.props.RentalReplies}
             />
           </div>
         );
@@ -113,8 +115,10 @@ class Requests extends React.Component {
               isLoadingRentals={this.props.isLoadingRentals}
               isLoadingRequests={this.props.isLoadingRequests}
               Rentals={this.props.Rentals}
-              // RentalRequests={this.props.RentalRequests}
+              //RentalRequests={this.props.RentalRequests}
               RentalConfirms={rsrvConfirms}
+              RentalRequestsNames={this.props.RentalRequestsNames}
+              RentalReplies={this.props.RentalReplies}
             />
           </div>
         );

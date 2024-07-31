@@ -13,7 +13,7 @@ const {
   PlatformProtocol: { Identifier },
 } = Dash;
 
-class Calender extends React.Component {
+class Calendar extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -720,6 +720,8 @@ class Calender extends React.Component {
               <Form.Group
                 className="mb-3"
                 controlId="formReqDate"
+                max={this.props.dateMaxForm}
+                min={this.props.dateMinForm}
 
                 // onChange={this.onChange}
               >
@@ -793,4 +795,4 @@ class Calender extends React.Component {
   }
 }
 
-export default Calender;
+export default Calendar;

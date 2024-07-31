@@ -63,6 +63,8 @@ class YourRsrvsPage extends React.Component {
                 Rentals={this.props.Rentals}
                 RentalRequests={this.props.RentalRequests}
                 RentalConfirms={this.props.RentalConfirms}
+                RentalReplies={this.props.RentalReplies}
+                MerchantNameDoc={this.props.MerchantNameDoc}
               />
             </>
           )}

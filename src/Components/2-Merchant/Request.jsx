@@ -12,10 +12,17 @@ class Request extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      //copiedName: false,
+      copiedName: false,
       copiedAddress: false,
     };
   }
+
+  handleNameClick = (nameLabel) => {
+    navigator.clipboard.writeText(nameLabel);
+    this.setState({
+      copiedName: true,
+    });
+  };
 
   verifyRequestStatus = (theRequest, theConfirm) => {
     // if (ride.txId1 !== "") {
@@ -37,7 +44,7 @@ class Request extends React.Component {
       theConfirm.departDate === theRequest.departDate
     ) {
       //console.log("Acceptance Rejected");
-      return <Badge bg="warning">Confirm Error</Badge>;
+      return <Badge bg="success">Confirmed</Badge>;
     }
 
     // if (paidThrs.length === 0) {
@@ -47,7 +54,7 @@ class Request extends React.Component {
 
     // if (ride.replyId === this.props.drive.$id) {
     //console.log("Confirmed");
-    return <Badge bg="success">Confirmed</Badge>;
+    return <Badge bg="warning">Confirm Error</Badge>;
     //}
   };
 
@@ -86,55 +93,60 @@ class Request extends React.Component {
       });
     }
 
+    //this.props.RentalRequestsNames
+    //this.props.RentalReplies
+
     //
-    //let replies =
-    // let replyName =
 
-    // if (rideRequest !== undefined) {
-    //   rideRequestName = this.props.rideRequestsNames.find((requestName) => {
-    //     return requestName.$ownerId === rideRequest.$ownerId;
-    //   });
+    let requestName = "No Name";
 
-    //   if (this.props.rideRequestsReplies.length !== 0) {
-    //     rideRepliesThrs = this.props.rideRequestsReplies.filter((thr) => {
-    //       return (
-    //         thr.amt === 0 &&
-    //         (this.props.drive.$ownerId === thr.$ownerId ||
-    //           rideRequest.$ownerId === thr.$ownerId)
-    //       );
-    //     });
-    //   }
-    // }
+    //if (confirm !== undefined) {
+    requestName = this.props.RentalRequestsNames.find((reqName) => {
+      return reqName.$ownerId === this.props.request.$ownerId;
+    });
+    //}
 
-    // let replyMessages = [];
-    // if (rideRequest !== undefined) {
-    //   replyMessages = rideRepliesThrs.map((msg, index) => {
-    //     return (
-    //       <Card
-    //         id="comment"
-    //         key={index}
-    //         index={index}
-    //         bg={cardBkg}
-    //         text={cardText}
-    //       >
-    //         <Card.Body>
-    //           <Card.Title className="cardTitle">
-    //             {msg.$ownerId === this.props.identity ? (
-    //               <b style={{ color: "#008de4" }}>{this.props.uniqueName}</b>
-    //             ) : (
-    //               <b style={{ color: "#008de4" }}>{rideRequestName.label}</b>
-    //             )}
+    let rentalReplies = [];
 
-    //             {/* <span className="textsmaller">
-    //                 {this.formatDate(msg.$createdAt, today, yesterday)}
-    //               </span> */}
-    //           </Card.Title>
-    //           <Card.Text>{msg.msg}</Card.Text>
-    //         </Card.Body>
-    //       </Card>
-    //     );
-    //   });
-    // }
+    if (
+      this.props.RentalReplies.length !== 0 &&
+      this.props.DisplayRequests === "Confirmed"
+    ) {
+      rentalReplies = this.props.RentalReplies.filter((msg) => {
+        return confirm.$id === msg.$id;
+      });
+    }
+
+    let rentalReplyMessages = [];
+
+    if (confirm !== undefined && rentalReplies.length !== 0) {
+      rentalReplyMessages = rentalReplies.map((msg, index) => {
+        return (
+          <Card
+            id="comment"
+            key={index}
+            index={index}
+            bg={cardBkg}
+            text={cardText}
+          >
+            <Card.Body>
+              <Card.Title className="cardTitle">
+                {msg.$ownerId === this.props.identity ? (
+                  <b style={{ color: "#008de4" }}>{this.props.uniqueName}</b>
+                ) : (
+                  <b style={{ color: "#008de4" }}>{requestName.label}</b>
+                )}
+
+                {/* <span className="textsmaller">
+                    {this.formatDate(msg.$createdAt, today, yesterday)}
+                  </span> */}
+              </Card.Title>
+              <Card.Text>{msg.msg}</Card.Text>
+            </Card.Body>
+          </Card>
+        );
+      });
+    }
 
     return (
       <>
@@ -184,7 +196,7 @@ class Request extends React.Component {
                 <Button
                   variant="outline-primary"
                   onClick={() => {
-                    navigator.clipboard.writeText(this.props.rental.address);
+                    navigator.clipboard.writeText(rental.address);
                     this.setState({
                       copiedAddress: true,
                     });
@@ -217,7 +229,7 @@ class Request extends React.Component {
 
             {/* Description */}
             {/* <p style={{ marginTop: "1rem", marginBottom: "1rem" }}>
-              {this.props.rental.description}
+              {rental.description}
             </p> */}
 
             {/* ArriveDate*/}
@@ -255,7 +267,7 @@ class Request extends React.Component {
             {/* <h5 style={{ marginTop: ".2rem", textAlign: "center" }}>
               {" "}
               <b style={{ color: "#008de4" }}>
-                {handleDenomDisplay(this.props.rental.rate)}
+                {handleDenomDisplay(rental.rate)}
               </b>{" "}
               per day
             </h5> */}
@@ -284,6 +296,7 @@ class Request extends React.Component {
                     <b>Confirm Reservation</b>
                   </Button>
                 </div>
+                <p></p>
               </>
             ) : (
               <></>
@@ -315,34 +328,25 @@ class Request extends React.Component {
 
             {confirm !== undefined ? (
               <>
-                <div
-                  className="BottomBorder"
-                  style={{ paddingTop: ".7rem", marginBottom: ".7rem" }}
-                ></div>
-                <div
-                  className="cardTitle"
-                  style={{ marginTop: ".4rem", marginBottom: ".5rem" }}
-                >
-                  <h5>Responses</h5>
-                  {this.verifyRequestStatus(this.props.request, confirm)}
-                </div>
-
                 {this.props.isYourRequestsRefreshReady ? (
-                  <div className="d-grid gap-2" id="button-edge-noTop">
-                    <Button
-                      variant="primary"
-                      // onClick={() => {
-                      //   this.props.refreshYourRides();
-                      // }}
-                      style={{
-                        fontSize: "larger",
-                        paddingLeft: "1rem",
-                        paddingRight: "1rem",
-                      }}
-                    >
-                      <b>Refresh</b>
-                    </Button>
-                  </div>
+                  <>
+                    <div className="d-grid gap-2" id="button-edge-noTop">
+                      <Button
+                        variant="primary"
+                        // onClick={() => {
+                        //   this.props.refreshYourRides();
+                        // }}
+                        style={{
+                          fontSize: "larger",
+                          paddingLeft: "1rem",
+                          paddingRight: "1rem",
+                        }}
+                      >
+                        <b>Refresh</b>
+                      </Button>
+                    </div>
+                    <p></p>
+                  </>
                 ) : (
                   <>
                     <div className="d-grid gap-2" id="button-edge-noTop">
@@ -358,6 +362,7 @@ class Request extends React.Component {
                         <b>Refresh</b>
                       </Button>
                     </div>
+                    <p></p>
                   </>
                 )}
               </>
@@ -367,33 +372,54 @@ class Request extends React.Component {
 
             {confirm !== undefined ? (
               <>
-                <h5>
-                  <span
-                    style={{
-                      marginTop: ".2rem",
-                      marginBottom: "0rem",
-                    }}
-                  >
-                    <b>Renter:</b>
-                  </span>
-                  <span
-                    style={{
-                      color: "#008de3",
-                      marginTop: ".2rem",
-                      marginBottom: "0rem",
-                    }}
-                  >
-                    {" "}
-                    <b>{replyName.label}</b>
-                  </span>
-                </h5>
-                <p></p>
+                <div
+                  className="BottomBorder"
+                  style={{ paddingTop: ".7rem", marginBottom: ".7rem" }}
+                ></div>
+                <div
+                  className="cardTitle"
+                  style={{ marginTop: ".4rem", marginBottom: ".5rem" }}
+                >
+                  <h5>Responses</h5>
+                  {this.verifyRequestStatus(this.props.request, confirm)}
+                </div>
               </>
             ) : (
               <></>
             )}
 
-            {confirm !== undefined && replies.length === 0 ? (
+            {/* {confirm !== undefined ? (
+              <> */}
+            <h5>
+              <span
+                style={{
+                  marginTop: ".2rem",
+                  marginBottom: "0rem",
+                }}
+              >
+                <b>Renter:</b>
+              </span>
+              <span
+                style={{
+                  color: "#008de3",
+                  marginTop: ".2rem",
+                  marginBottom: "0rem",
+                }}
+              >
+                {" "}
+                <b onClick={() => this.handleNameClick(requestName.label)}>
+                  {requestName.label}
+                </b>
+              </span>
+              <span>{this.state.copiedName ? <span>✅</span> : <></>}</span>
+            </h5>
+            <p></p>
+            {/* </>
+            ) : (
+              <></>
+            )} */}
+
+            {confirm !== undefined && rentalReplies.length === 0 ? (
               <>
                 <p style={{ textAlign: "center", paddingTop: ".5rem" }}>
                   (Currently, there are no messages to this reservation.)
@@ -413,7 +439,7 @@ class Request extends React.Component {
                     // onClick={() =>
                     //   this.props.handleYourRideMsgModalShow(
                     //     this.props.ride,
-                    //     replyName
+                    //     requestName
                     //   )
                     // }
                   >

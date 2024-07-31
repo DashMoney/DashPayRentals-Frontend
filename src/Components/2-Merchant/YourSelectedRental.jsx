@@ -13,7 +13,7 @@ import LowCreditsOnPage from "../LowCreditsOnPage";
 import formatDate from "../TimeDisplayShort";
 import handleDenomDisplay from "../UnitDisplay";
 
-import Calender from "../2-Merchant/CalenderComponents/Calendar";
+import Calendar from "./CalendarComponents/Calendar";
 
 import { IoMdArrowRoundBack } from "react-icons/io";
 
@@ -335,7 +335,7 @@ class YourSelectedRental extends React.Component {
           <p></p>
 
           {/* Schedule */}
-          <Calender
+          <Calendar
             mode={this.props.mode}
             rental={this.props.rental}
             MerchantId={this.props.MerchantId}
@@ -546,20 +546,20 @@ class YourSelectedRental extends React.Component {
           </div>
           <p></p>
 
-          <h4>
+          {/* <h4>
             <b>Q&A</b>
           </h4>
-          {/* {this.state.SearchedReviews.length === 0 && !this.state.LoadingDGR ? ( */}
+          {this.state.SearchedReviews.length === 0 && !this.state.LoadingDGR ? (
           <div className="bodytext">
             <p>
               This is where Customer's questions and the owner's answers will
               go.
             </p>
           </div>
-          {/* ) : (
+           ) : (
             <></>
-          )} */}
-          <p></p>
+          )} 
+          <p></p> */}
 
           <h4>
             <b>Reviews</b>

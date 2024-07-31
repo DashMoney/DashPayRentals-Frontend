@@ -12,10 +12,17 @@ class YourRsrv extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      //copiedName: false,
+      copiedName: false,
       copiedAddress: false,
     };
   }
+
+  handleNameClick = (nameLabel) => {
+    navigator.clipboard.writeText(nameLabel);
+    this.setState({
+      copiedName: true,
+    });
+  };
 
   verifyRequestStatus = (theRequest, theConfirm) => {
     // if (ride.txId1 !== "") {
@@ -79,6 +86,9 @@ class YourRsrv extends React.Component {
     let confirm = this.props.RentalConfirms.find((confirm) => {
       return this.props.request.$id === confirm.reqId;
     });
+
+    //this.props.RentalReplies
+    //this.props.MerchantNameDoc
 
     //
     //let replies =
@@ -178,7 +188,7 @@ class YourRsrv extends React.Component {
                 <Button
                   variant="outline-primary"
                   onClick={() => {
-                    navigator.clipboard.writeText(this.props.rental.address);
+                    navigator.clipboard.writeText(rental.address);
                     this.setState({
                       copiedAddress: true,
                     });
@@ -211,7 +221,7 @@ class YourRsrv extends React.Component {
 
             {/* Description */}
             {/* <p style={{ marginTop: "1rem", marginBottom: "1rem" }}>
-              {this.props.rental.description}
+              {rental.description}
             </p> */}
 
             {/* ArriveDate*/}
@@ -249,7 +259,7 @@ class YourRsrv extends React.Component {
             {/* <h5 style={{ marginTop: ".2rem", textAlign: "center" }}>
               {" "}
               <b style={{ color: "#008de4" }}>
-                {handleDenomDisplay(this.props.rental.rate)}
+                {handleDenomDisplay(rental.rate)}
               </b>{" "}
               per day
             </h5> */}
@@ -291,6 +301,46 @@ class YourRsrv extends React.Component {
               <></>
             )}
 
+            {confirm !== undefined ? (
+              <>
+                {this.props.isYourRequestsRefreshReady ? (
+                  <div className="d-grid gap-2" id="button-edge-noTop">
+                    <Button
+                      variant="primary"
+                      // onClick={() => {
+                      //   this.props.refreshYourRequests();
+                      // }}
+                      style={{
+                        fontSize: "larger",
+                        paddingLeft: "1rem",
+                        paddingRight: "1rem",
+                      }}
+                    >
+                      <b>Refresh</b>
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="d-grid gap-2" id="button-edge-noTop">
+                      <Button
+                        variant="primary"
+                        disabled
+                        style={{
+                          fontSize: "larger",
+                          paddingLeft: "1rem",
+                          paddingRight: "1rem",
+                        }}
+                      >
+                        <b>Refresh</b>
+                      </Button>
+                    </div>
+                  </>
+                )}
+              </>
+            ) : (
+              <></>
+            )}
+
             <div
               className="BottomBorder"
               style={{ paddingTop: ".7rem", marginBottom: ".7rem" }}
@@ -303,64 +353,37 @@ class YourRsrv extends React.Component {
               {this.verifyRequestStatus(this.props.request, confirm)}
             </div>
 
-            {this.props.isYourRequestsRefreshReady ? (
-              <div className="d-grid gap-2" id="button-edge-noTop">
-                <Button
-                  variant="primary"
-                  // onClick={() => {
-                  //   this.props.refreshYourRequests();
-                  // }}
-                  style={{
-                    fontSize: "larger",
-                    paddingLeft: "1rem",
-                    paddingRight: "1rem",
-                  }}
-                >
-                  <b>Refresh</b>
-                </Button>
-              </div>
-            ) : (
-              <>
-                <div className="d-grid gap-2" id="button-edge-noTop">
-                  <Button
-                    variant="primary"
-                    disabled
-                    style={{
-                      fontSize: "larger",
-                      paddingLeft: "1rem",
-                      paddingRight: "1rem",
-                    }}
-                  >
-                    <b>Refresh</b>
-                  </Button>
-                </div>
-              </>
-            )}
-
             {/* {confirm !== undefined ? (
-              <>
-                <h5>
-                  <span
-                    style={{
-                      marginTop: ".2rem",
-                      marginBottom: "0rem",
-                    }}
-                  >
-                    <b>Driver:</b>
-                  </span>
-                  <span
-                    style={{
-                      color: "#008de3",
-                      marginTop: ".2rem",
-                      marginBottom: "0rem",
-                    }}
-                  >
-                    {" "}
-                    <b>{replyNames.label}</b>
-                  </span>
-                </h5>
-                <p></p>
-              </>
+              <> */}
+            <h5>
+              <span
+                style={{
+                  marginTop: ".2rem",
+                  marginBottom: "0rem",
+                }}
+              >
+                <b>Owner:</b>
+              </span>
+              <span
+                style={{
+                  color: "#008de3",
+                  marginTop: ".2rem",
+                  marginBottom: "0rem",
+                }}
+              >
+                {" "}
+                <b
+                  onClick={() =>
+                    this.handleNameClick(this.props.MerchantNameDoc.label)
+                  }
+                >
+                  {this.props.MerchantNameDoc.label}
+                </b>
+              </span>
+              <span>{this.state.copiedName ? <span>✅</span> : <></>}</span>
+            </h5>
+            <p></p>
+            {/* </>
             ) : (
               <></>
             )} */}
@@ -383,12 +406,12 @@ class YourRsrv extends React.Component {
                 <div className="ButtonRightNoUnderline">
                   <Button
                     variant="primary"
-                    onClick={() =>
-                      this.props.handleYourRideMsgModalShow(
-                        this.props.ride,
-                        replyNames
-                      )
-                    }
+                    // onClick={() =>
+                    //   this.props.handleYourRideMsgModalShow(
+                    //     this.props.ride,
+                    //     replyNames
+                    //   )
+                    // }
                   >
                     <b>Add Message</b>
                   </Button>
