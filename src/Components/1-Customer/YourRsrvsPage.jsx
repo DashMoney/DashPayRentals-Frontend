@@ -3,7 +3,7 @@ import React from "react";
 import Spinner from "react-bootstrap/Spinner";
 import Button from "react-bootstrap/Button";
 
-import LowCreditsOnPage from "../LowCreditsOnPage";
+//import LowCreditsOnPage from "../LowCreditsOnPage";
 import CreditsOnPage from "../CreditsOnPage";
 
 import YourRsrvs from "./YourRsrvs";
@@ -34,9 +34,43 @@ class YourRsrvsPage extends React.Component {
             <b>Reservations</b>{" "}
           </h5>
 
+          {this.props.isYourRsrvsRefreshReady ? (
+            <div className="d-grid gap-2" id="button-edge-noTop">
+              <Button
+                variant="primary"
+                onClick={() => {
+                  this.props.refreshYourRsrvs();
+                }}
+                style={{
+                  fontSize: "larger",
+                  paddingLeft: "1rem",
+                  paddingRight: "1rem",
+                }}
+              >
+                <b>Refresh</b>
+              </Button>
+            </div>
+          ) : (
+            <>
+              <div className="d-grid gap-2" id="button-edge-noTop">
+                <Button
+                  variant="primary"
+                  disabled
+                  style={{
+                    fontSize: "larger",
+                    paddingLeft: "1rem",
+                    paddingRight: "1rem",
+                  }}
+                >
+                  <b>Refresh</b>
+                </Button>
+              </div>
+            </>
+          )}
+          <p></p>
+
           {this.props.isLoadingRentals || this.props.isLoadingRequests ? (
             <>
-              <p></p>
               <div id="spinner">
                 <Spinner animation="border" role="status">
                   <span className="visually-hidden">Loading...</span>
@@ -55,16 +89,22 @@ class YourRsrvsPage extends React.Component {
             <>
               <YourRsrvs
                 mode={this.props.mode}
+                identity={this.props.identity}
+                MerchantNameDoc={this.props.MerchantNameDoc}
+                uniqueName={this.props.uniqueName}
                 //
                 handleSelectedDapp={this.props.handleSelectedDapp}
                 handleSelectedRental={this.props.handleSelectedRental}
+                handleCustomerReplyModalShow={
+                  this.props.handleCustomerReplyModalShow
+                }
+                //
                 isLoadingRentals={this.props.isLoadingRentals}
                 isLoadingRequests={this.props.isLoadingRequests}
                 Rentals={this.props.Rentals}
                 RentalRequests={this.props.RentalRequests}
                 RentalConfirms={this.props.RentalConfirms}
                 RentalReplies={this.props.RentalReplies}
-                MerchantNameDoc={this.props.MerchantNameDoc}
               />
             </>
           )}

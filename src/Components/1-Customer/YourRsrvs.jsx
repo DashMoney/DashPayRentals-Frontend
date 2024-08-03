@@ -21,18 +21,24 @@ class YourRsrvs extends React.Component {
             today={today}
             yesterday={yesterday}
             identity={this.props.identity} //For if my review so can edit
-            //uniqueName={this.props.uniqueName}
-
+            //
+            MerchantNameDoc={this.props.MerchantNameDoc}
+            uniqueName={this.props.uniqueName}
+                        //
             handleSelectedYourRsrv={this.props.handleSelectedYourRsrv}
             handleSelectedDapp={this.props.handleSelectedDapp}
             handleSelectedRental={this.props.handleSelectedRental}
+            handleCustomerReplyModalShow={
+              this.props.handleCustomerReplyModalShow
+            }
+            //
             isLoadingRentals={this.props.isLoadingRentals}
             isLoadingRequests={this.props.isLoadingRequests}
             Rentals={this.props.Rentals}
             RentalRequests={this.props.RentalRequests}
             RentalConfirms={this.props.RentalConfirms}
             RentalReplies={this.props.RentalReplies}
-            MerchantNameDoc={this.props.MerchantNameDoc}
+            
           />
         </div>
       );

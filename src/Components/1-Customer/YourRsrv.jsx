@@ -90,55 +90,53 @@ class YourRsrv extends React.Component {
     //this.props.RentalReplies
     //this.props.MerchantNameDoc
 
-    //
-    //let replies =
-    // let replie names??
+    //this.props.MerchantNameDoc
+    //this.props.uniqueName
 
-    // if (rideRequest !== undefined) {
-    //   rideRequestName = this.props.rideRequestsNames.find((requestName) => {
-    //     return requestName.$ownerId === rideRequest.$ownerId;
-    //   });
+    let rentalReplies = [];
 
-    //   if (this.props.rideRequestsReplies.length !== 0) {
-    //     rideRepliesThrs = this.props.rideRequestsReplies.filter((thr) => {
-    //       return (
-    //         thr.amt === 0 &&
-    //         (this.props.drive.$ownerId === thr.$ownerId ||
-    //           rideRequest.$ownerId === thr.$ownerId)
-    //       );
-    //     });
-    //   }
-    // }
+    if (this.props.RentalReplies.length !== 0) {
+      rentalReplies = this.props.RentalReplies.filter((msg) => {
+        return confirm.$id === msg.confirmId;
+      });
+    }
 
-    // let replyMessages = [];
-    // if (rideRequest !== undefined) {
-    //   replyMessages = rideRepliesThrs.map((msg, index) => {
-    //     return (
-    //       <Card
-    //         id="comment"
-    //         key={index}
-    //         index={index}
-    //         bg={cardBkg}
-    //         text={cardText}
-    //       >
-    //         <Card.Body>
-    //           <Card.Title className="cardTitle">
-    //             {msg.$ownerId === this.props.identity ? (
-    //               <b style={{ color: "#008de4" }}>{this.props.uniqueName}</b>
-    //             ) : (
-    //               <b style={{ color: "#008de4" }}>{rideRequestName.label}</b>
-    //             )}
+    let rentalReplyMessages = [];
 
-    //             {/* <span className="textsmaller">
-    //                 {this.formatDate(msg.$createdAt, today, yesterday)}
-    //               </span> */}
-    //           </Card.Title>
-    //           <Card.Text>{msg.msg}</Card.Text>
-    //         </Card.Body>
-    //       </Card>
-    //     );
-    //   });
-    // }
+    if (confirm !== undefined && rentalReplies.length !== 0) {
+      rentalReplyMessages = rentalReplies.map((msg, index) => {
+        return (
+          <Card
+            id="comment"
+            key={index}
+            index={index}
+            bg={cardBkg}
+            text={cardText}
+          >
+            <Card.Body>
+              <Card.Title className="cardTitle">
+                {msg.$ownerId === this.props.identity ? (
+                  <b style={{ color: "#008de4" }}>{this.props.uniqueName}</b>
+                ) : (
+                  <b style={{ color: "#008de4" }}>
+                    {this.props.MerchantNameDoc.label}
+                  </b>
+                )}
+
+                <span className="textsmaller">
+                  {formatDate(
+                    msg.$createdAt,
+                    this.props.today,
+                    this.props.yesterday
+                  )}
+                </span>
+              </Card.Title>
+              <Card.Text>{msg.msg}</Card.Text>
+            </Card.Body>
+          </Card>
+        );
+      });
+    }
 
     return (
       <>
@@ -275,7 +273,7 @@ class YourRsrv extends React.Component {
                 {handleDenomDisplay(this.props.request.amt)}
               </b>
             </h4>
-            <p></p>
+
             {confirm === undefined ? (
               <>
                 <div className="TwoButtons">
@@ -301,7 +299,7 @@ class YourRsrv extends React.Component {
               <></>
             )}
 
-            {confirm !== undefined ? (
+            {/* {confirm !== undefined ? (
               <>
                 {this.props.isYourRequestsRefreshReady ? (
                   <div className="d-grid gap-2" id="button-edge-noTop">
@@ -339,7 +337,7 @@ class YourRsrv extends React.Component {
               </>
             ) : (
               <></>
-            )}
+            )} */}
 
             <div
               className="BottomBorder"
@@ -388,7 +386,7 @@ class YourRsrv extends React.Component {
               <></>
             )} */}
 
-            {confirm === undefined ? (
+            {confirm === undefined && rentalReplies.length === 0 ? (
               <>
                 <p style={{ textAlign: "center", paddingTop: ".5rem" }}>
                   (Currently, there are no messages for this rental
@@ -399,19 +397,16 @@ class YourRsrv extends React.Component {
               <></>
             )}
 
-            {/* {replyMessages} */}
+            {rentalReplyMessages}
 
             {confirm !== undefined ? (
               <>
                 <div className="ButtonRightNoUnderline">
                   <Button
                     variant="primary"
-                    // onClick={() =>
-                    //   this.props.handleYourRideMsgModalShow(
-                    //     this.props.ride,
-                    //     replyNames
-                    //   )
-                    // }
+                    onClick={() =>
+                      this.props.handleCustomerReplyModalShow(confirm)
+                    }
                   >
                     <b>Add Message</b>
                   </Button>

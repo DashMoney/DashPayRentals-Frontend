@@ -29,6 +29,9 @@ import ConfirmRequestModal from "./Components/2-Merchant/MerchantModals/ConfirmR
 import BlockConfirmModal from "./Components/2-Merchant/MerchantModals/BlockConfirmModal";
 import MakeRequestModal from "./Components/1-Customer/CustomerModals/MakeRequestModal";
 
+import MerchantReplyModal from "./Components/2-Merchant/MerchantModals/MerchantReplyModal";
+import CustomerReplyModal from "./Components/1-Customer/CustomerModals/CustomerReplyModal";
+
 import TopUpIdentityModal from "./Components/TopUpIdentityModal";
 import FrontEndExplaination from "./Components/FrontEndExplaination";
 
@@ -110,6 +113,9 @@ class App extends React.Component {
 
       selectedArriveDate: "",
       selectedDepartureDate: "",
+
+      selectedConfirm: "",
+      selectedReplyNameDoc: "", //Just for merchant reply
 
       isMerchantRequestsRefreshReady: true,
       isYourRsrvsRefreshReady: true,
@@ -237,6 +243,8 @@ class App extends React.Component {
         $ownerId: import.meta.env.VITE_MERCHANT_IDENTITY,
         label: "No name avail", //import.meta.env.VITE_FRONTEND_NAME
       },
+
+      DisplayRequests: "Requests",
 
       //REVIEWS (BELOW)
 
@@ -1460,6 +1468,12 @@ class App extends React.Component {
 
   //SETTIMEOUT WAY ^^^^
 
+  handleMerchantRequestFilter = (theSelected) => {
+    this.setState({
+      DisplayRequests: theSelected,
+    });
+  };
+
   startMerchantRace = () => {
     if (!this.state.isLoadingRequests) {
       this.setState({ isLoadingRequests: true });
@@ -1722,7 +1736,7 @@ class App extends React.Component {
               "base64"
             ).toJSON();
             //console.log("newReply:\n", returnedDoc);
-            docArray = [...docArray, returnedDoc];
+            docArray = [returnedDoc, ...docArray];
           }
 
           this.setState(
@@ -1947,6 +1961,100 @@ class App extends React.Component {
       })
       .catch((e) => {
         console.error("Something went wrong with Block Confirm creation:\n", e);
+      })
+      .finally(() => client.disconnect());
+  };
+
+  handleMerchantReplyModalShow = (theConfirm, nameDoc) => {
+    this.setState(
+      {
+        selectedConfirm: theConfirm,
+        selectedReplyNameDoc: nameDoc,
+      },
+      () => this.showModal("MerchantReplyModal")
+    );
+  };
+
+  //confirmId createdAt - query
+  // confirmId && msg - attributes
+
+  createMerchantReply = (replyMsgComment) => {
+    //console.log("Called Merchant Message Submit: ", replyMsgComment);
+
+    this.setState({
+      isLoadingRequests: true,
+    });
+
+    const client = new Dash.Client(
+      dapiClient(
+        this.state.whichNetwork,
+        this.state.mnemonic,
+        this.state.skipSynchronizationBeforeHeight
+      )
+    );
+
+    const submitMsgDoc = async () => {
+      const { platform } = client;
+
+      let identity = "";
+      if (this.state.identityRaw !== "") {
+        identity = this.state.identityRaw;
+      } else {
+        identity = await platform.identities.get(this.state.identity);
+      }
+
+      const replyProperties = {
+        confirmId: this.state.selectedConfirm.$id,
+        msg: replyMsgComment,
+      };
+      //console.log('Reply to Create: ', replyProperties);
+
+      // Create the note document
+      const rentalDocument = await platform.documents.create(
+        "RENTALSContract.reply",
+        identity,
+        replyProperties
+      );
+
+      //############################################################
+      //This below disconnects the document sending..***
+
+      //return rentalDocument;
+
+      //This is to disconnect the Document Creation***
+      //############################################################
+
+      const documentBatch = {
+        create: [rentalDocument], // Document(s) to create
+      };
+
+      await platform.documents.broadcast(documentBatch, identity);
+      return rentalDocument;
+    };
+
+    submitMsgDoc()
+      .then((d) => {
+        let returnedDoc = d.toJSON();
+        console.log("Document:\n", returnedDoc);
+
+        returnedDoc.confirmId = Identifier.from(
+          returnedDoc.confirmId,
+          "base64"
+        ).toJSON();
+
+        this.setState(
+          {
+            RentalReplies: [...this.state.RentalReplies, returnedDoc],
+            isLoadingRequests: false,
+          },
+          () => this.loadIdentityCredits()
+        );
+      })
+      .catch((e) => {
+        console.error(
+          "Something went wrong with Merchant Reply Msg creation:\n",
+          e
+        );
       })
       .finally(() => client.disconnect());
   };
@@ -2271,7 +2379,8 @@ class App extends React.Component {
               "base64"
             ).toJSON();
             //console.log("newReply:\n", returnedDoc);
-            docArray = [...docArray, returnedDoc];
+            //docArray = [...docArray, returnedDoc];
+            docArray = [returnedDoc, ...docArray];
           }
 
           this.setState({
@@ -2312,18 +2421,20 @@ class App extends React.Component {
     //REFRESH -> TIMEOUT
   };
 
-  handleCustomerReplyModalShow = (theConfirm, nameDoc) => {
+  handleCustomerReplyModalShow = (theConfirm) => {
     this.setState(
       {
         selectedConfirm: theConfirm,
-        selectedReplyNameDoc: nameDoc,
       },
       () => this.showModal("CustomerReplyModal")
     );
   };
 
+  //confirmId createdAt - query
+  // confirmId && msg - attributes
+
   createCustomerReply = (replyMsgComment) => {
-    //console.log("Called Your Drive Message Submit: ", replyMsgComment);
+    //console.log("Called Customer Message Submit: ", replyMsgComment);
 
     this.setState({
       isLoadingRequests: true,
@@ -2348,14 +2459,13 @@ class App extends React.Component {
       }
 
       const replyProperties = {
-        //toId
-        confirmId: this.state.selectedYourDrive.$id,
+        confirmId: this.state.selectedConfirm.$id,
         msg: replyMsgComment,
       };
       //console.log('Reply to Create: ', replyProperties);
 
       // Create the note document
-      const radDocument = await platform.documents.create(
+      const rentalDocument = await platform.documents.create(
         "RENTALSContract.reply",
         identity,
         replyProperties
@@ -2364,17 +2474,17 @@ class App extends React.Component {
       //############################################################
       //This below disconnects the document sending..***
 
-      //return radDocument;
+      //return rentalDocument;
 
       //This is to disconnect the Document Creation***
       //############################################################
 
       const documentBatch = {
-        create: [radDocument], // Document(s) to create
+        create: [rentalDocument], // Document(s) to create
       };
 
       await platform.documents.broadcast(documentBatch, identity);
-      return radDocument;
+      return rentalDocument;
     };
 
     submitMsgDoc()
@@ -2382,43 +2492,27 @@ class App extends React.Component {
         let returnedDoc = d.toJSON();
         console.log("Document:\n", returnedDoc);
 
-        // returnedDoc.reqId = Identifier.from(
-        //   returnedDoc.reqId,
-        //   "base64"
-        // ).toJSON();
-
-        let rideReply = {
-          $ownerId: returnedDoc.$ownerId,
-          $id: returnedDoc.$id,
-          $createdAt: returnedDoc.$createdAt,
-          amt: 0,
-          //toId
-          reqId: returnedDoc.reqId,
-          msg: replyMsgComment,
-        };
+        returnedDoc.confirmId = Identifier.from(
+          returnedDoc.confirmId,
+          "base64"
+        ).toJSON();
 
         this.setState(
           {
-            //YourDrives: [rideReply, ...this.state.YourDrives],
-            YourDrivesRequestsReplies: [
-              rideReply,
-              ...this.state.YourDrivesRequestsReplies,
-            ],
-            isLoadingYourDrives: false,
+            RentalReplies: [...this.state.RentalReplies, returnedDoc],
+            isLoadingRequests: false,
           },
           () => this.loadIdentityCredits()
         );
       })
       .catch((e) => {
         console.error(
-          "Something went wrong with Your Drive Reply Msg creation:\n",
+          "Something went wrong with Customer Reply Msg creation:\n",
           e
         );
       })
       .finally(() => client.disconnect());
   };
-
-  //SETTIMEOUT WAY ^^^^
 
   /*
    *CUSTOMER FUNCTIONS^^^^
@@ -3360,6 +3454,12 @@ class App extends React.Component {
                         handleConfirmRequestModal={
                           this.handleConfirmRequestModal
                         }
+                        handleMerchantReplyModalShow={
+                          this.handleMerchantReplyModalShow
+                        }
+                        handleMerchantRequestFilter={
+                          this.handleMerchantRequestFilter
+                        }
                         //
                         // pullInitialTriggerMERCHANT={
                         //   this.pullInitialTriggerMERCHANT
@@ -3368,10 +3468,14 @@ class App extends React.Component {
                         identity={this.state.identity}
                         identityInfo={this.state.identityInfo}
                         uniqueName={this.state.uniqueName}
+                        MerchantNameDoc={this.state.MerchantNameDoc}
+                        DisplayRequests={this.state.DisplayRequests}
+                        //
                         mode={this.state.mode}
                         showModal={this.showModal}
                         isLoadingWallet={this.state.isLoadingWallet}
                         accountBalance={this.state.accountBalance}
+                        //
                       />
                     </>
                   ) : (
@@ -3517,12 +3621,17 @@ class App extends React.Component {
                         RentalRequests={this.state.RentalRequests}
                         RentalConfirms={this.state.RentalConfirms}
                         RentalReplies={this.state.RentalReplies}
-                        MerchantNameDoc={this.state.MerchantNameDoc}
                         //
                         handleSelectedRental={this.handleSelectedRental}
+                        handleCustomerReplyModalShow={
+                          this.handleCustomerReplyModalShow
+                        }
+                        //
                         identity={this.state.identity}
                         identityInfo={this.state.identityInfo}
+                        MerchantNameDoc={this.state.MerchantNameDoc}
                         uniqueName={this.state.uniqueName}
+                        //
                         mode={this.state.mode}
                         showModal={this.showModal}
                       />
@@ -3645,6 +3754,7 @@ class App extends React.Component {
             DataContractRENTALS={this.state.DataContractRENTALS}
             whichNetwork={this.state.whichNetwork}
             MerchantId={this.state.MerchantId}
+            MerchantNameDoc={this.state.MerchantNameDoc}
             SelectedRental={this.state.SelectedRental}
             StartDate={this.state.selectedArriveDate}
             EndDate={this.state.selectedDepartureDate}
@@ -3700,7 +3810,7 @@ class App extends React.Component {
             mode={this.state.mode}
             MerchantNameDoc={this.state.MerchantNameDoc}
             //selectedRequest
-
+            selectedConfirm={this.state.selectedConfirm}
             createCustomerReply={this.createCustomerReply}
             closeTopNav={this.closeTopNav}
           />
@@ -3708,23 +3818,20 @@ class App extends React.Component {
           <></>
         )}
 
-        {/* {this.state.isModalShowing &&
+        {this.state.isModalShowing &&
         this.state.presentModal === "MerchantReplyModal" ? (
           <MerchantReplyModal
             isModalShowing={this.state.isModalShowing}
             hideModal={this.hideModal}
             mode={this.state.mode}
-            
-            //selectedRequest
-            //uniqueName={this.state.}
-            //List of names for the requests!!
-            //
+            selectedConfirm={this.state.selectedConfirm}
+            selectedReplyNameDoc={this.state.selectedReplyNameDoc}
             createMerchantReply={this.createMerchantReply}
             closeTopNav={this.closeTopNav}
           />
         ) : (
           <></>
-        )} */}
+        )}
       </>
     );
   }

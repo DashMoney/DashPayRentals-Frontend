@@ -26,7 +26,7 @@ class YourRentalsPage extends React.Component {
             uniqueName={this.props.uniqueName}
             showModal={this.props.showModal}
           />
-          <div id="sidetextonlysides">
+          {/* <div id="sidetextonlysides">
             {this.props.isLoadingWallet ? (
               <>
                 <div className="paddingBadge">
@@ -45,7 +45,7 @@ class YourRentalsPage extends React.Component {
                 </div>
               </>
             )}
-          </div>
+          </div> */}
           <p></p>
           <div className="d-grid gap-2">
             {this.props.isLoadingRentals ? (
@@ -85,9 +85,6 @@ class YourRentalsPage extends React.Component {
             Rentals={this.props.Rentals}
             identity={this.props.identity}
             uniqueName={this.props.uniqueName}
-            // handleConfirmYourDriverModal={
-            //   this.props.handleConfirmYourDriverModal
-            // }
             handleSelectedRental={this.props.handleSelectedRental}
             handleEditYourRental={this.props.handleEditYourRental}
             handleDeleteYourRental={this.props.handleDeleteYourRental}

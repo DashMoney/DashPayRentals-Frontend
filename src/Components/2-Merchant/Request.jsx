@@ -6,6 +6,7 @@ import Badge from "react-bootstrap/Badge";
 
 import handleDenomDisplay from "../UnitDisplay";
 import formatDate from "../TimeDisplayLong";
+
 import simpleDate from "../DateDisplay";
 
 class Request extends React.Component {
@@ -113,7 +114,7 @@ class Request extends React.Component {
       this.props.DisplayRequests === "Confirmed"
     ) {
       rentalReplies = this.props.RentalReplies.filter((msg) => {
-        return confirm.$id === msg.$id;
+        return confirm.$id === msg.confirmId;
       });
     }
 
@@ -137,9 +138,13 @@ class Request extends React.Component {
                   <b style={{ color: "#008de4" }}>{requestName.label}</b>
                 )}
 
-                {/* <span className="textsmaller">
-                    {this.formatDate(msg.$createdAt, today, yesterday)}
-                  </span> */}
+                <span className="textsmaller">
+                  {formatDate(
+                    msg.$createdAt,
+                    this.props.today,
+                    this.props.yesterday
+                  )}
+                </span>
               </Card.Title>
               <Card.Text>{msg.msg}</Card.Text>
             </Card.Body>
@@ -193,7 +198,7 @@ class Request extends React.Component {
               >
                 <span style={{ whiteSpace: "pre-wrap" }}>{rental.address}</span>
 
-                <Button
+                {/* <Button
                   variant="outline-primary"
                   onClick={() => {
                     navigator.clipboard.writeText(rental.address);
@@ -203,13 +208,13 @@ class Request extends React.Component {
                   }}
                 >
                   {this.state.copiedAddress ? <b>Copied!</b> : <b>Copy</b>}
-                </Button>
+                </Button> */}
               </div>
             ) : (
               <></>
             )}
 
-            <p></p>
+            {/* <p></p>
             <div className="d-grid gap-2">
               <Button
                 // size="lg"
@@ -219,7 +224,8 @@ class Request extends React.Component {
                 <b>View Rental</b>
               </Button>
             </div>
-            <p></p>
+            <p></p> */}
+
             {/* <p
               className="textsmaller"
               style={{ marginTop: "1rem", textAlign: "center" }}
@@ -274,7 +280,7 @@ class Request extends React.Component {
             <h4
               style={{
                 marginTop: "1.5rem",
-                marginBottom: "2rem",
+                marginBottom: "1rem",
                 textAlign: "center",
               }}
             >
@@ -283,7 +289,7 @@ class Request extends React.Component {
                 {handleDenomDisplay(this.props.request.amt)}
               </b>
             </h4>
-            <p></p>
+
             {confirm === undefined && !this.props.isLoadingRequests ? (
               <>
                 <div className="d-grid gap-2">
@@ -326,7 +332,7 @@ class Request extends React.Component {
               <></>
             )} */}
 
-            {confirm !== undefined ? (
+            {/* {confirm !== undefined ? (
               <>
                 {this.props.isYourRequestsRefreshReady ? (
                   <>
@@ -368,7 +374,7 @@ class Request extends React.Component {
               </>
             ) : (
               <></>
-            )}
+            )} */}
 
             {confirm !== undefined ? (
               <>
@@ -429,19 +435,19 @@ class Request extends React.Component {
               <></>
             )}
 
-            {/* {replyMessages} */}
+            {rentalReplyMessages}
 
             {confirm !== undefined ? (
               <>
                 <div className="ButtonRightNoUnderline">
                   <Button
                     variant="primary"
-                    // onClick={() =>
-                    //   this.props.handleYourRideMsgModalShow(
-                    //     this.props.ride,
-                    //     requestName
-                    //   )
-                    // }
+                    onClick={() =>
+                      this.props.handleMerchantReplyModalShow(
+                        confirm,
+                        requestName
+                      )
+                    }
                   >
                     <b>Add Message</b>
                   </Button>

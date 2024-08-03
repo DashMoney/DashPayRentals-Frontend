@@ -25,6 +25,8 @@ class MakeRequestModal extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      copiedName: false,
+
       LoadingConfirms: true,
       Confirm1: false,
       Confirm2: false,
@@ -35,6 +37,13 @@ class MakeRequestModal extends React.Component {
       // confirmDocuments: [],
     };
   }
+
+  handleNameClick = (nameLabel) => {
+    navigator.clipboard.writeText(nameLabel);
+    this.setState({
+      copiedName: true,
+    });
+  };
 
   handleCloseClick = () => {
     this.props.hideModal();
@@ -270,6 +279,34 @@ class MakeRequestModal extends React.Component {
             {closeButtonColor}
           </Modal.Header>
           <Modal.Body>
+            <h5>
+              <span
+                style={{
+                  marginTop: ".2rem",
+                  marginBottom: "0rem",
+                }}
+              >
+                <b>Owner:</b>
+              </span>
+              <span
+                style={{
+                  color: "#008de3",
+                  marginTop: ".2rem",
+                  marginBottom: "0rem",
+                }}
+              >
+                {" "}
+                <b
+                  onClick={() =>
+                    this.handleNameClick(this.props.MerchantNameDoc.label)
+                  }
+                >
+                  {this.props.MerchantNameDoc.label}
+                </b>
+              </span>
+              <span>{this.state.copiedName ? <span>✅</span> : <></>}</span>
+            </h5>
+            <p></p>
             {this.state.LoadingConfirms ? (
               <>
                 <p></p>

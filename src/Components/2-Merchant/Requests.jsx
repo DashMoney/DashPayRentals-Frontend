@@ -5,19 +5,15 @@ import Request from "./Request";
 import BlockedOff from "./BlockedOff";
 
 class Requests extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      DisplayRequests: "Requests", //Payment Schedule
-    };
-  }
+  // constructor(props) {  //MOVED TO APP STATE
+  //   super(props);
+  //   this.state = {
+  //     DisplayRequests: "Requests", //Payment Schedule
+  //   };
+  // }
 
   handleRequestFilter = (selected) => {
-    this.setState(
-      {
-        DisplayRequests: selected,
-      } //,() => console.log(this.state.DisplayRequests)
-    );
+    this.props.handleMerchantRequestFilter(selected);
   };
 
   onChange = (event) => {
@@ -59,23 +55,24 @@ class Requests extends React.Component {
     });
     let requests = [];
 
-    if (this.state.DisplayRequests === "Requests") {
+    if (this.props.DisplayRequests === "Requests") {
       requests = unconfirmedReqs.map((request, index) => {
         //console.log(post);
         return (
           <div key={index} style={{ marginBottom: "0.1rem" }}>
             <Request
               //key={index}
+
               mode={this.props.mode}
               index={index}
               request={request}
               today={today}
               yesterday={yesterday}
               identity={this.props.identity} //For if my review so can edit
-              //uniqueName={this.props.uniqueName}
+              uniqueName={this.props.uniqueName}
               handleConfirmRequestModal={this.props.handleConfirmRequestModal}
               //
-              DisplayRequests={this.state.DisplayRequests}
+              DisplayRequests={this.props.DisplayRequests}
               handleSelectedYourRsrv={this.props.handleSelectedYourRsrv}
               handleSelectedDapp={this.props.handleSelectedDapp}
               handleSelectedRental={this.props.handleSelectedRental}
@@ -92,7 +89,7 @@ class Requests extends React.Component {
       });
     }
 
-    if (this.state.DisplayRequests === "Confirmed") {
+    if (this.props.DisplayRequests === "Confirmed") {
       requests = confirmedReqs.map((request, index) => {
         //console.log(post);
         return (
@@ -105,10 +102,13 @@ class Requests extends React.Component {
               today={today}
               yesterday={yesterday}
               identity={this.props.identity} //For if my review so can edit
-              //uniqueName={this.props.uniqueName}
+              uniqueName={this.props.uniqueName}
               handleConfirmRequestModal={this.props.handleConfirmRequestModal}
+              handleMerchantReplyModalShow={
+                this.props.handleMerchantReplyModalShow
+              }
               //
-              DisplayRequests={this.state.DisplayRequests}
+              DisplayRequests={this.props.DisplayRequests}
               handleSelectedYourRsrv={this.props.handleSelectedYourRsrv}
               handleSelectedDapp={this.props.handleSelectedDapp}
               handleSelectedRental={this.props.handleSelectedRental}
@@ -127,7 +127,7 @@ class Requests extends React.Component {
 
     let blocks = [];
 
-    if (this.state.DisplayRequests === "Blocked Off") {
+    if (this.props.DisplayRequests === "Blocked Off") {
       blocks = blockedConfirms.map((confirmBlock, index) => {
         //console.log(post);
         return (
@@ -142,7 +142,7 @@ class Requests extends React.Component {
               identity={this.props.identity} //For if my review so can edit
               //uniqueName={this.props.uniqueName}
 
-              DisplayRequests={this.state.DisplayRequests}
+              DisplayRequests={this.props.DisplayRequests}
               handleSelectedYourRsrv={this.props.handleSelectedYourRsrv}
               handleSelectedDapp={this.props.handleSelectedDapp}
               handleSelectedRental={this.props.handleSelectedRental}
@@ -188,6 +188,7 @@ class Requests extends React.Component {
               // bg={formBkg}
               //text={formText}
               data-bs-theme={formBkg}
+              defaultValue={this.props.DisplayRequests}
             >
               <option value="Requests" style={{ fontWeight: "bold" }}>
                 Requests
@@ -203,9 +204,9 @@ class Requests extends React.Component {
         </Form>
 
         <p></p>
-        {this.state.DisplayRequests === "Requests" ? <>{requests}</> : <></>}
-        {this.state.DisplayRequests === "Confirmed" ? <>{requests}</> : <></>}
-        {this.state.DisplayRequests === "Blocked Off" ? <>{blocks}</> : <></>}
+        {this.props.DisplayRequests === "Requests" ? <>{requests}</> : <></>}
+        {this.props.DisplayRequests === "Confirmed" ? <>{requests}</> : <></>}
+        {this.props.DisplayRequests === "Blocked Off" ? <>{blocks}</> : <></>}
       </>
     );
   }

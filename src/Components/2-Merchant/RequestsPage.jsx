@@ -24,30 +24,47 @@ class RequestsPage extends React.Component {
             uniqueName={this.props.uniqueName}
             showModal={this.props.showModal}
           />
-          <div id="sidetextonlysides">
-            {this.props.isLoadingWallet ? (
-              <>
-                <div className="paddingBadge">
-                  <b>Wallet Balance</b>
 
-                  <h4>Loading..</h4>
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="paddingBadge">
-                  <b>Wallet Balance</b>
-                  <h4 style={{ color: "#008de4" }}>
-                    <b>{handleDenomDisplay(this.props.accountBalance, 1)}</b>
-                  </h4>
-                </div>
-              </>
-            )}
-          </div>
+          {this.props.isMerchantRequestsRefreshReady ? (
+            <>
+              <div className="d-grid gap-2" id="button-edge-noTop">
+                <Button
+                  variant="primary"
+                  onClick={() => {
+                    this.props.refreshMerchantRequests();
+                  }}
+                  style={{
+                    fontSize: "larger",
+                    paddingLeft: "1rem",
+                    paddingRight: "1rem",
+                  }}
+                >
+                  <b>Refresh</b>
+                </Button>
+              </div>
+              <p></p>
+            </>
+          ) : (
+            <>
+              <div className="d-grid gap-2" id="button-edge-noTop">
+                <Button
+                  variant="primary"
+                  disabled
+                  style={{
+                    fontSize: "larger",
+                    paddingLeft: "1rem",
+                    paddingRight: "1rem",
+                  }}
+                >
+                  <b>Refresh</b>
+                </Button>
+              </div>
+              <p></p>
+            </>
+          )}
 
           {this.props.isLoadingRentals || this.props.isLoadingRequests ? (
             <>
-              <p></p>
               <div id="spinner">
                 <Spinner animation="border" role="status">
                   <span className="visually-hidden">Loading...</span>
@@ -58,11 +75,11 @@ class RequestsPage extends React.Component {
           ) : (
             <></>
           )}
+
           {this.props.isLoadingRequests ? (
             <></>
           ) : (
             <>
-              <p></p>
               <Requests
                 Rentals={this.props.Rentals}
                 RentalRequests={this.props.RentalRequests}
@@ -72,20 +89,23 @@ class RequestsPage extends React.Component {
                 //
                 handleSelectedRental={this.props.handleSelectedRental}
                 handleConfirmRequestModal={this.props.handleConfirmRequestModal}
+                handleMerchantReplyModalShow={
+                  this.props.handleMerchantReplyModalShow
+                }
+                handleMerchantRequestFilter={
+                  this.props.handleMerchantRequestFilter
+                }
                 //
                 identity={this.props.identity}
                 uniqueName={this.props.uniqueName}
-                handleConfirmYourDriverModal={
-                  this.props.handleConfirmYourDriverModal
-                }
                 isLoadingWallet={this.props.isLoadingWallet}
                 accountHistory={this.props.accountHistory}
                 mode={this.props.mode}
+                DisplayRequests={this.props.DisplayRequests}
                 //
                 isLoadingRequests={this.props.isLoadingRequests}
                 isRequestsRefreshReady={this.props.isRequestsRefreshReady}
                 refreshRequests={this.props.refreshRequests}
-                //handleYourRentalMsgModalShow={this.props.handleYourRentalMsgModalShow}
               />
             </>
           )}

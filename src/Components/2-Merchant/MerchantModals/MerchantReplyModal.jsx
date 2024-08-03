@@ -30,7 +30,7 @@ class MerchantReplyModal extends React.Component {
   };
 
   commentValidate = (comment) => {
-    let regex = /^.[\S\s]{0,250}$/;
+    let regex = /^.[\S\s]{0,450}$/;
 
     let valid = regex.test(comment);
 
@@ -41,7 +41,7 @@ class MerchantReplyModal extends React.Component {
         tooLongCommentError: false,
       });
     } else {
-      if (comment.length > 250) {
+      if (comment.length > 450) {
         this.setState({
           commentInput: comment,
           validComment: false,
@@ -57,7 +57,7 @@ class MerchantReplyModal extends React.Component {
   };
 
   handleSubmitClick = () => {
-    this.props.createReplyMsg(this.state.commentInput);
+    this.props.createMerchantReply(this.state.commentInput);
     this.props.hideModal();
   };
 
@@ -95,11 +95,9 @@ class MerchantReplyModal extends React.Component {
           </Modal.Header>
           <Modal.Body>
             <Form.Group className="mb-3" controlId="formComment">
-              {/* <Form.Label>
-                <b>
-                  Message for {this.props.selectedYourRideReplyNameDoc.label}
-                </b>
-              </Form.Label> */}
+              <Form.Label>
+                <b>Message for {this.props.selectedReplyNameDoc.label}</b>
+              </Form.Label>
 
               <Form.Control
                 onChange={this.onChange}
@@ -113,7 +111,7 @@ class MerchantReplyModal extends React.Component {
 
               {this.state.tooLongError ? (
                 <Form.Control.Feedback className="floatLeft" type="invalid">
-                  Sorry, this is too long! Please use less than 250 characters.
+                  Sorry, this is too long! Please use less than 450 characters.
                 </Form.Control.Feedback>
               ) : (
                 <></>
