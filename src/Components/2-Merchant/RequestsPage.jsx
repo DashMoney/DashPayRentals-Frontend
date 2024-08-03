@@ -95,6 +95,7 @@ class RequestsPage extends React.Component {
                 handleMerchantRequestFilter={
                   this.props.handleMerchantRequestFilter
                 }
+                handleDeleteBlockConfirmModal={this.props.handleDeleteBlockConfirmModal}
                 //
                 identity={this.props.identity}
                 uniqueName={this.props.uniqueName}

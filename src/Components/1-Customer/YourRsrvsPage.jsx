@@ -98,6 +98,7 @@ class YourRsrvsPage extends React.Component {
                 handleCustomerReplyModalShow={
                   this.props.handleCustomerReplyModalShow
                 }
+                handleDeleteRequestModal={this.props.handleDeleteRequestModal}
                 //
                 isLoadingRentals={this.props.isLoadingRentals}
                 isLoadingRequests={this.props.isLoadingRequests}

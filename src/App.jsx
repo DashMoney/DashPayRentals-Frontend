@@ -27,10 +27,14 @@ import YourSelectedRental from "./Components/2-Merchant/YourSelectedRental";
 
 import ConfirmRequestModal from "./Components/2-Merchant/MerchantModals/ConfirmRequestModal";
 import BlockConfirmModal from "./Components/2-Merchant/MerchantModals/BlockConfirmModal";
+
 import MakeRequestModal from "./Components/1-Customer/CustomerModals/MakeRequestModal";
+import DeleteRequestModal from "./Components/1-Customer/CustomerModals/DeleteRequestModal";
 
 import MerchantReplyModal from "./Components/2-Merchant/MerchantModals/MerchantReplyModal";
 import CustomerReplyModal from "./Components/1-Customer/CustomerModals/CustomerReplyModal";
+
+import DeleteBlockConfirmModal from "./Components/2-Merchant/MerchantModals/DeleteBlockConfirmModal";
 
 import TopUpIdentityModal from "./Components/TopUpIdentityModal";
 import FrontEndExplaination from "./Components/FrontEndExplaination";
@@ -110,11 +114,13 @@ class App extends React.Component {
       SelectedRental: "", // should be the rental document
 
       selectedRequest: "",
+      selectedRequestIndex: "",
 
       selectedArriveDate: "",
       selectedDepartureDate: "",
 
       selectedConfirm: "",
+      selectedConfirmIndex: "",
       selectedReplyNameDoc: "", //Just for merchant reply
 
       isMerchantRequestsRefreshReady: true,
@@ -1965,6 +1971,88 @@ class App extends React.Component {
       .finally(() => client.disconnect());
   };
 
+  handleDeleteBlockConfirmModal = (theBlockConfirm, index) => {
+    // let requestRental = this.state.Rentals.find((rental) => {
+    //   return rental.$id === theBlockConfirm.rentalId;
+    // });
+    this.setState(
+      {
+        //SelectedRental: requestRental,
+        selectedConfirm: theBlockConfirm,
+        //I also need the name <- NOT FOR MY POSTS
+        selectedConfirmIndex: index, //<- Need this for the editingfunction!!
+        // ^^ THE INDEX OF THE BLOCKS IS NOT OF THE RENTALCONFIRMS
+      },
+      () => this.showModal("DeleteBlockConfirmModal")
+    );
+  };
+
+  deleteBlockConfirm = () => {
+    //console.log("Called Delete BlockConfirm");
+
+    this.setState({
+      isLoadingRequests: true,
+    });
+
+    const client = new Dash.Client(
+      dapiClient(
+        this.state.whichNetwork,
+        this.state.mnemonic,
+        this.state.skipSynchronizationBeforeHeight
+      )
+    );
+
+    const deleteNoteDocument = async () => {
+      const { platform } = client;
+
+      let identity = "";
+      if (this.state.identityRaw !== "") {
+        identity = this.state.identityRaw;
+      } else {
+        identity = await platform.identities.get(this.state.identity);
+      }
+
+      const documentId = this.state.selectedConfirm.$id;
+
+      // Retrieve the existing document
+
+      //JUST PUT IN THE DOCUMENT THAT i ALREADY HAVE... => Done
+      // Wrong ^^^ Can not use because changed to JSON
+
+      const [document] = await client.platform.documents.get(
+        "RENTALSContract.confirm",
+        { where: [["$id", "==", documentId]] }
+      );
+
+      // Sign and submit the document delete transition
+      //await platform.documents.broadcast({ delete: [document] }, identity);
+      return document;
+    };
+
+    deleteNoteDocument()
+      .then((d) => {
+        //console.log("Document deleted:\n", d.toJSON());
+
+        let editedConfirms = this.state.RentalConfirms;
+
+        //find the index here!! =>
+        let blockConfirmIndex = this.state.RentalConfirms.findIndex(
+          (confirm) => {
+            return confirm.$id === this.state.selectedConfirm.$id;
+          }
+        );
+
+        editedConfirms.splice(blockConfirmIndex, 1);
+
+        this.setState({
+          RentalConfirms: editedConfirms,
+          isLoadingRequests: false,
+        });
+      })
+      .catch((e) => console.error("Something went wrong:\n", e))
+      .finally(() => client.disconnect());
+  };
+
   handleMerchantReplyModalShow = (theConfirm, nameDoc) => {
     this.setState(
       {
@@ -2088,7 +2176,6 @@ class App extends React.Component {
     );
   };
 
-  //createRequest
   createRequest = () => {
     console.log("Called Create Request");
     this.hideModal();
@@ -2185,6 +2272,80 @@ class App extends React.Component {
       .catch((e) => {
         console.error("Something went wrong with Request creation:\n", e);
       })
+      .finally(() => client.disconnect());
+  };
+
+  handleDeleteRequestModal = (theRequest, index) => {
+    let requestRental = this.state.Rentals.find((rental) => {
+      return rental.$id === theRequest.rentalId;
+    });
+    this.setState(
+      {
+        SelectedRental: requestRental,
+        selectedRequest: theRequest,
+        //I also need the name <- NOT FOR MY POSTS
+        selectedRequestIndex: index, //<- Need this for the editingfunction!!
+      },
+      () => this.showModal("DeleteRequestModal")
+    );
+  };
+
+  deleteRequest = () => {
+    //console.log("Called Delete Request");
+
+    this.setState({
+      isLoadingRequests: true,
+    });
+
+    const client = new Dash.Client(
+      dapiClient(
+        this.state.whichNetwork,
+        this.state.mnemonic,
+        this.state.skipSynchronizationBeforeHeight
+      )
+    );
+
+    const deleteNoteDocument = async () => {
+      const { platform } = client;
+
+      let identity = "";
+      if (this.state.identityRaw !== "") {
+        identity = this.state.identityRaw;
+      } else {
+        identity = await platform.identities.get(this.state.identity);
+      }
+
+      const documentId = this.state.selectedRequest.$id;
+
+      // Retrieve the existing document
+
+      //JUST PUT IN THE DOCUMENT THAT i ALREADY HAVE... => Done
+      // Wrong ^^^ Can not use because changed to JSON
+
+      const [document] = await client.platform.documents.get(
+        "RENTALSContract.request",
+        { where: [["$id", "==", documentId]] }
+      );
+
+      // Sign and submit the document delete transition
+      //await platform.documents.broadcast({ delete: [document] }, identity);
+      return document;
+    };
+
+    deleteNoteDocument()
+      .then((d) => {
+        //console.log("Document deleted:\n", d.toJSON());
+
+        let editedRequests = this.state.RentalRequests;
+
+        editedRequests.splice(this.state.selectedRequestIndex, 1);
+
+        this.setState({
+          RentalRequests: editedRequests,
+          isLoadingRequests: false,
+        });
+      })
+      .catch((e) => console.error("Something went wrong:\n", e))
       .finally(() => client.disconnect());
   };
 
@@ -3460,6 +3621,9 @@ class App extends React.Component {
                         handleMerchantRequestFilter={
                           this.handleMerchantRequestFilter
                         }
+                        handleDeleteBlockConfirmModal={
+                          this.handleDeleteBlockConfirmModal
+                        }
                         //
                         // pullInitialTriggerMERCHANT={
                         //   this.pullInitialTriggerMERCHANT
@@ -3627,6 +3791,8 @@ class App extends React.Component {
                           this.handleCustomerReplyModalShow
                         }
                         //
+                        handleDeleteRequestModal={this.handleDeleteRequestModal}
+                        //
                         identity={this.state.identity}
                         identityInfo={this.state.identityInfo}
                         MerchantNameDoc={this.state.MerchantNameDoc}
@@ -3725,7 +3891,6 @@ class App extends React.Component {
         ) : (
           <></>
         )}
-
         {this.state.isModalShowing &&
         this.state.presentModal === "RegisterNameModal" ? (
           <RegisterNameModal
@@ -3747,7 +3912,6 @@ class App extends React.Component {
         ) : (
           <></>
         )}
-
         {this.state.isModalShowing &&
         this.state.presentModal === "MakeRequestModal" ? (
           <MakeRequestModal
@@ -3766,7 +3930,21 @@ class App extends React.Component {
         ) : (
           <></>
         )}
-
+        {this.state.isModalShowing &&
+        this.state.presentModal === "DeleteRequestModal" ? (
+          <DeleteRequestModal
+            SelectedRental={this.state.SelectedRental}
+            selectedRequest={this.state.selectedRequest}
+            MerchantNameDoc={this.state.MerchantNameDoc}
+            //uniqueName={this.state.uniqueName}
+            deleteRequest={this.deleteRequest}
+            isModalShowing={this.state.isModalShowing}
+            hideModal={this.hideModal}
+            mode={this.state.mode}
+          />
+        ) : (
+          <></>
+        )}
         {this.state.isModalShowing &&
         this.state.presentModal === "ConfirmRequestModal" ? (
           <ConfirmRequestModal
@@ -3783,7 +3961,6 @@ class App extends React.Component {
         ) : (
           <></>
         )}
-
         {this.state.isModalShowing &&
         this.state.presentModal === "BlockConfirmModal" ? (
           <BlockConfirmModal
@@ -3794,6 +3971,21 @@ class App extends React.Component {
             StartDate={this.state.selectedArriveDate}
             EndDate={this.state.selectedDepartureDate}
             createBlockConfirm={this.createBlockConfirm}
+            isModalShowing={this.state.isModalShowing}
+            hideModal={this.hideModal}
+            mode={this.state.mode}
+          />
+        ) : (
+          <></>
+        )}
+        {this.state.isModalShowing &&
+        this.state.presentModal === "DeleteBlockConfirmModal" ? (
+          <DeleteBlockConfirmModal
+            //SelectedRental={this.state.SelectedRental}
+            selectedConfirm={this.state.selectedConfirm}
+            //MerchantNameDoc={this.state.MerchantNameDoc}
+            //uniqueName={this.state.uniqueName}
+            deleteBlockConfirm={this.deleteBlockConfirm}
             isModalShowing={this.state.isModalShowing}
             hideModal={this.hideModal}
             mode={this.state.mode}
@@ -3817,7 +4009,6 @@ class App extends React.Component {
         ) : (
           <></>
         )}
-
         {this.state.isModalShowing &&
         this.state.presentModal === "MerchantReplyModal" ? (
           <MerchantReplyModal

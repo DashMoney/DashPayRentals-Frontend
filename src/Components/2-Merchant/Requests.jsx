@@ -146,6 +146,8 @@ class Requests extends React.Component {
               handleSelectedYourRsrv={this.props.handleSelectedYourRsrv}
               handleSelectedDapp={this.props.handleSelectedDapp}
               handleSelectedRental={this.props.handleSelectedRental}
+              handleDeleteBlockConfirmModal={this.props.handleDeleteBlockConfirmModal}
+              //
               isLoadingRentals={this.props.isLoadingRentals}
               isLoadingRequests={this.props.isLoadingRequests}
               Rentals={this.props.Rentals}

@@ -55,7 +55,6 @@ class BlockedOff extends React.Component {
               </span>
             </Card.Title>
 
-            <p></p>
             {rental.address !== undefined && rental.address !== "" ? (
               <div
                 style={{
@@ -64,7 +63,7 @@ class BlockedOff extends React.Component {
                   justifyContent: "space-between",
                   marginLeft: "1rem",
                   marginRight: "2rem",
-                  marginBottom: "1.2rem",
+                  marginBottom: "1rem",
                 }}
               >
                 <span style={{ whiteSpace: "pre-wrap" }}>{rental.address}</span>
@@ -131,10 +130,12 @@ class BlockedOff extends React.Component {
             <div className="d-grid gap-2">
               <Button
                 variant="primary"
-                disabled
-                // onClick={() =>
-                //   this.props.handleDeleteYourDrive(this.props.index)
-                // }
+                onClick={() =>
+                  this.props.handleDeleteBlockConfirmModal(
+                    this.props.confirmBlock,
+                    this.props.index
+                  )
+                }
               >
                 <b>Delete Block Off</b>
               </Button>

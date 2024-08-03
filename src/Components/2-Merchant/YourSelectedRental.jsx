@@ -318,7 +318,8 @@ class YourSelectedRental extends React.Component {
             </b>{" "}
             per day
           </h5>
-          <div className="d-grid gap-2">
+
+          {/* <div className="d-grid gap-2">
             <Button
               size="lg"
               variant="primary"
@@ -327,6 +328,25 @@ class YourSelectedRental extends React.Component {
               // }
             >
               <b>Edit/Delete Rental</b>
+            </Button>
+          </div> */}
+          <p></p>
+          <div className="TwoButtons">
+            <Button
+              variant="primary"
+              // onClick={() =>
+              //   this.props.handleDeleteRental(this.props.index)
+              // }
+            >
+              <b>Delete Rental</b>
+            </Button>
+            <Button
+              variant="primary"
+              // onClick={() =>
+              //   this.props.handleEditRental(this.props.index)
+              // }
+            >
+              <b>Edit Rental</b>
             </Button>
           </div>
           <p></p>
@@ -533,7 +553,7 @@ class YourSelectedRental extends React.Component {
 
           <p></p>
 
-          <div className="d-grid gap-2">
+          {/* <div className="d-grid gap-2">
             <Button
               size="lg"
               variant="primary"
@@ -544,7 +564,7 @@ class YourSelectedRental extends React.Component {
               <b>Edit/Delete Rental</b>
             </Button>
           </div>
-          <p></p>
+          <p></p> */}
 
           {/* <h4>
             <b>Q&A</b>

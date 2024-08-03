@@ -274,30 +274,17 @@ class YourRsrv extends React.Component {
               </b>
             </h4>
 
-            {confirm === undefined ? (
-              <>
-                <div className="TwoButtons">
-                  <Button
-                    variant="primary"
-                    // onClick={() =>
-                    //   this.props.handleDeleteYourRequest(this.props.index)
-                    // }
-                  >
-                    <b>Delete Request</b>
-                  </Button>
-                  <Button
-                    variant="primary"
-                    // onClick={() =>
-                    //   this.props.handleEditYourRequest(this.props.index)
-                    // }
-                  >
-                    <b>Edit Request</b>
-                  </Button>
-                </div>
-              </>
-            ) : (
-              <></>
-            )}
+            <Button
+              variant="primary"
+              onClick={() =>
+                this.props.handleDeleteRequestModal(
+                  this.props.request,
+                  this.props.index
+                )
+              }
+            >
+              <b>Delete Request</b>
+            </Button>
 
             {/* {confirm !== undefined ? (
               <>

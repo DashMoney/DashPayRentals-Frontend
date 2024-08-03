@@ -24,13 +24,14 @@ class YourRsrvs extends React.Component {
             //
             MerchantNameDoc={this.props.MerchantNameDoc}
             uniqueName={this.props.uniqueName}
-                        //
+            //
             handleSelectedYourRsrv={this.props.handleSelectedYourRsrv}
             handleSelectedDapp={this.props.handleSelectedDapp}
             handleSelectedRental={this.props.handleSelectedRental}
             handleCustomerReplyModalShow={
               this.props.handleCustomerReplyModalShow
             }
+            handleDeleteRequestModal={this.props.handleDeleteRequestModal}
             //
             isLoadingRentals={this.props.isLoadingRentals}
             isLoadingRequests={this.props.isLoadingRequests}
@@ -38,7 +39,6 @@ class YourRsrvs extends React.Component {
             RentalRequests={this.props.RentalRequests}
             RentalConfirms={this.props.RentalConfirms}
             RentalReplies={this.props.RentalReplies}
-            
           />
         </div>
       );
