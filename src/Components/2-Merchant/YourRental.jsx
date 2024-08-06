@@ -3,6 +3,8 @@ import React from "react";
 
 import Card from "react-bootstrap/Card";
 import Button from "react-bootstrap/Button";
+
+import Badge from "react-bootstrap/Badge";
 import Carousel from "react-bootstrap/Carousel";
 
 import Image from "react-bootstrap/Image";
@@ -14,6 +16,28 @@ class YourRental extends React.Component {
       copiedName: false,
     };
   }
+
+  handleActive = () => {
+    if (this.props.rental.active) {
+      return (
+        // <span style={{ color: "#008de4" }}>
+        //   <b>Active</b>
+        // </span>
+        <Badge bg="primary">
+          <b>Active</b>
+        </Badge>
+      );
+    } else {
+      return (
+        // <span style={{ color: "#008de4" }}>
+        //   <b>Inactive</b>
+        // </span>
+        <Badge bg="warning">
+          <b>Inactive</b>
+        </Badge>
+      );
+    }
+  };
 
   handleNameClick = () => {
     navigator.clipboard.writeText(`${this.props.tuple[0]}`);
@@ -94,13 +118,14 @@ class YourRental extends React.Component {
                 {" "}
                 <b style={{ color: "#008de4" }}>{this.props.rental.title}</b>
               </h5>
-              <span className="textsmaller">
+              {this.handleActive()}
+              {/* <span className="textsmaller">
                 {this.formatDate(
                   this.props.rental.$updatedAt,
                   this.props.today,
                   this.props.yesterday
                 )}
-              </span>
+              </span> */}
             </Card.Title>
             <Carousel slide={false} interval={null}>
               {carouselImgs}

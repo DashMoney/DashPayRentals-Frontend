@@ -106,34 +106,40 @@ class YourRsrv extends React.Component {
     if (confirm !== undefined && rentalReplies.length !== 0) {
       rentalReplyMessages = rentalReplies.map((msg, index) => {
         return (
-          <Card
-            id="comment"
-            key={index}
-            index={index}
-            bg={cardBkg}
-            text={cardText}
-          >
-            <Card.Body>
-              <Card.Title className="cardTitle">
-                {msg.$ownerId === this.props.identity ? (
-                  <b style={{ color: "#008de4" }}>{this.props.uniqueName}</b>
-                ) : (
-                  <b style={{ color: "#008de4" }}>
-                    {this.props.MerchantNameDoc.label}
-                  </b>
-                )}
+          // <Card
+          //   id="comment"
+          //   key={index}
+          //   index={index}
+          //   bg={cardBkg}
+          //   text={cardText}
+          // >
+          //   <Card.Body>
+          <div index={index} key={index}>
+            <div
+              className="ThreadBorder"
+              style={{ paddingTop: ".2rem", marginBottom: ".3rem" }}
+            ></div>
+            <Card.Title className="cardTitle">
+              {msg.$ownerId === this.props.identity ? (
+                <b style={{ color: "#008de4" }}>{this.props.uniqueName}</b>
+              ) : (
+                <b style={{ color: "#008de4" }}>
+                  {this.props.MerchantNameDoc.label}
+                </b>
+              )}
 
-                <span className="textsmaller">
-                  {formatDate(
-                    msg.$createdAt,
-                    this.props.today,
-                    this.props.yesterday
-                  )}
-                </span>
-              </Card.Title>
-              <Card.Text>{msg.msg}</Card.Text>
-            </Card.Body>
-          </Card>
+              <span className="textsmaller">
+                {formatDate(
+                  msg.$createdAt,
+                  this.props.today,
+                  this.props.yesterday
+                )}
+              </span>
+            </Card.Title>
+            <Card.Text>{msg.msg}</Card.Text>
+          </div>
+          //    </Card.Body>
+          // </Card>
         );
       });
     }
@@ -274,17 +280,25 @@ class YourRsrv extends React.Component {
               </b>
             </h4>
 
-            <Button
-              variant="primary"
-              onClick={() =>
-                this.props.handleDeleteRequestModal(
-                  this.props.request,
-                  this.props.index
-                )
-              }
-            >
-              <b>Delete Request</b>
-            </Button>
+            {confirm === undefined ? (
+              <>
+                <div className="ButtonRightNoUnderline">
+                  <Button
+                    variant="primary"
+                    onClick={() =>
+                      this.props.handleDeleteRequestModal(
+                        this.props.request,
+                        this.props.index
+                      )
+                    }
+                  >
+                    <b>Delete Request</b>
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <></>
+            )}
 
             {/* {confirm !== undefined ? (
               <>
@@ -385,7 +399,7 @@ class YourRsrv extends React.Component {
             )}
 
             {rentalReplyMessages}
-
+            <p></p>
             {confirm !== undefined ? (
               <>
                 <div className="ButtonRightNoUnderline">

@@ -86,8 +86,8 @@ class YourRentalsPage extends React.Component {
             identity={this.props.identity}
             uniqueName={this.props.uniqueName}
             handleSelectedRental={this.props.handleSelectedRental}
-            handleEditYourRental={this.props.handleEditYourRental}
-            handleDeleteYourRental={this.props.handleDeleteYourRental}
+            //
+
             isLoadingWallet={this.props.isLoadingWallet}
             accountHistory={this.props.accountHistory}
             mode={this.props.mode}

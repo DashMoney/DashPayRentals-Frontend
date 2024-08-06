@@ -8,6 +8,7 @@ import Carousel from "react-bootstrap/Carousel";
 import Image from "react-bootstrap/Image";
 
 import handleDenomDisplay from "../UnitDisplay";
+import formatDate from "../TimeDisplayShort";
 
 class Rental extends React.Component {
   constructor(props) {
@@ -18,6 +19,18 @@ class Rental extends React.Component {
     };
   }
 
+  handleActive = () => {
+    if (this.props.rental.active) {
+      return "";
+    } else {
+      return (
+        <span style={{ color: "#008de4" }}>
+          <b>Inactive</b>
+        </span>
+      );
+    }
+  };
+
   // handleNameClick = () => {
   //   navigator.clipboard.writeText(`${this.props.tuple[0]}`);
   //   this.setState({
@@ -25,40 +38,40 @@ class Rental extends React.Component {
   //   });
   // };
 
-  formatDate(theCreatedAt, today, yesterday) {
-    let CreatedAt = new Date(theCreatedAt);
+  // formatDate(theCreatedAt, today, yesterday) {
+  //   let CreatedAt = new Date(theCreatedAt);
 
-    const timeOptions = {
-      hour: "numeric",
-      minute: "2-digit", //numeric?
-    };
+  //   const timeOptions = {
+  //     hour: "numeric",
+  //     minute: "2-digit", //numeric?
+  //   };
 
-    function isSameDay(date1, date2) {
-      return (
-        date1.getDate() === date2.getDate() &&
-        date1.getMonth() === date2.getMonth() &&
-        date1.getFullYear() === date2.getFullYear()
-      );
-    }
+  //   function isSameDay(date1, date2) {
+  //     return (
+  //       date1.getDate() === date2.getDate() &&
+  //       date1.getMonth() === date2.getMonth() &&
+  //       date1.getFullYear() === date2.getFullYear()
+  //     );
+  //   }
 
-    if (isSameDay(CreatedAt, today)) {
-      // it's today
-      return `Today at ${CreatedAt.toLocaleTimeString(undefined, timeOptions)}`;
-    }
+  //   if (isSameDay(CreatedAt, today)) {
+  //     // it's today
+  //     return `Today at ${CreatedAt.toLocaleTimeString(undefined, timeOptions)}`;
+  //   }
 
-    if (isSameDay(CreatedAt, yesterday)) {
-      // it was yesterday
-      return `Yesterday at ${CreatedAt.toLocaleTimeString(
-        undefined,
-        timeOptions
-      )}`;
-    }
-    let dateReturn = CreatedAt.toLocaleDateString().concat(
-      "  ",
-      CreatedAt.toLocaleTimeString(undefined, timeOptions)
-    );
-    return dateReturn;
-  }
+  //   if (isSameDay(CreatedAt, yesterday)) {
+  //     // it was yesterday
+  //     return `Yesterday at ${CreatedAt.toLocaleTimeString(
+  //       undefined,
+  //       timeOptions
+  //     )}`;
+  //   }
+  //   let dateReturn = CreatedAt.toLocaleDateString().concat(
+  //     "  ",
+  //     CreatedAt.toLocaleTimeString(undefined, timeOptions)
+  //   );
+  //   return dateReturn;
+  // }
 
   render() {
     let cardBkg;
@@ -100,11 +113,13 @@ class Rental extends React.Component {
                   {this.props.rental.title}
                 </b>
               </h5>
+
+              {this.handleActive()}
               <span className="textsmaller">
-                {this.formatDate(
-                  this.props.rental.$updatedAt,
-                  this.props.today,
-                  this.props.yesterday
+                {formatDate(
+                  this.props.rental.$updatedAt
+                  // this.props.today,
+                  // this.props.yesterday
                 )}
               </span>
             </Card.Title>

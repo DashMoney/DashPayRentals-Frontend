@@ -37,6 +37,18 @@ class SelectedRentalPage extends React.Component {
     };
   }
 
+  handleActive = () => {
+    if (this.props.rental.active) {
+      return "";
+    } else {
+      return (
+        <span style={{ color: "#008de4" }}>
+          <b>Inactive</b>
+        </span>
+      );
+    }
+  };
+
   // handleArrivalDateCalc = () => {
   //   let dateArr = [];
 
@@ -268,6 +280,8 @@ class SelectedRentalPage extends React.Component {
                 {this.props.rental.title}
               </b>
             </h5>
+
+            {this.handleActive()}
             <span className="textsmaller">
               {formatDate(
                 this.props.rental.$updatedAt,

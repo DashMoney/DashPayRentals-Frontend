@@ -25,6 +25,9 @@ import YourRsrvsPage from "./Components/1-Customer/YourRsrvsPage";
 import CreateRental from "./Components/2-Merchant/CreateRental";
 import YourSelectedRental from "./Components/2-Merchant/YourSelectedRental";
 
+import EditRentalModal from "./Components/2-Merchant/MerchantModals/EditRentalModal";
+import DeleteRentalModal from "./Components/2-Merchant/MerchantModals/DeleteRentalModal";
+
 import ConfirmRequestModal from "./Components/2-Merchant/MerchantModals/ConfirmRequestModal";
 import BlockConfirmModal from "./Components/2-Merchant/MerchantModals/BlockConfirmModal";
 
@@ -112,6 +115,7 @@ class App extends React.Component {
       isLoadingRequests: true,
 
       SelectedRental: "", // should be the rental document
+      selectedRentalIndex: "", //for editing and deleting rental
 
       selectedRequest: "",
       selectedRequestIndex: "",
@@ -1208,11 +1212,24 @@ class App extends React.Component {
       .finally(() => client.disconnect());
   };
 
-  //CONVERT TO RENTAL ->
-  editRental = (rideObject) => {
-    //  console.log("Called Edit Ride");
+  handleEditRentalModal = (theRental, index) => {
+    // let requestRental = this.state.Rentals.find((rental) => {
+    //   return rental.$id === theBlockConfirm.rentalId;
+    // });
+    this.setState(
+      {
+        SelectedRental: theRental,
+        selectedRentalIndex: index, //<- Need this for the editingfunction!!
+      },
+      () => this.showModal("EditRentalModal")
+    );
+  };
+
+  editRental = (rentalObject) => {
+    //  console.log("Called Edit Rental");
     this.setState({
       isLoadingRentals: true,
+      selectedDapp: "Rentals",
     });
 
     const client = new Dash.Client(
@@ -1223,7 +1240,7 @@ class App extends React.Component {
       )
     );
 
-    const submitPostDoc = async () => {
+    const submitRentalDoc = async () => {
       const { platform } = client;
 
       let identity = "";
@@ -1234,97 +1251,63 @@ class App extends React.Component {
       }
 
       const [document] = await client.platform.documents.get(
-        "RADContract.rideReq",
+        "RENTALSContract.rental",
         {
-          where: [
-            [
-              "$id",
-              "==",
-              this.state.YourRides[this.state.selectedYourRideIndex].$id,
-            ],
-          ],
+          where: [["$id", "==", this.state.SelectedRental.$id]],
         }
       );
 
-      if (
-        this.state.YourRides[this.state.selectedYourRideIndex].area !==
-        rideObject.area
-      ) {
-        document.set("area", rideObject.area);
-      }
-      if (
-        this.state.YourRides[this.state.selectedYourRideIndex].city !==
-        rideObject.city
-      ) {
-        document.set("city", rideObject.city);
-      }
-      if (
-        this.state.YourRides[this.state.selectedYourRideIndex].region !==
-        rideObject.region
-      ) {
-        document.set("region", rideObject.region);
+      if (this.state.SelectedRental.title !== rentalObject.title) {
+        document.set("title", rentalObject.title);
       }
 
-      if (
-        this.state.YourRides[this.state.selectedYourRideIndex].pickupAddr !==
-        rideObject.pickupAddr
-      ) {
-        document.set("pickupAddr", rideObject.pickupAddr);
-      }
-      if (
-        this.state.YourRides[this.state.selectedYourRideIndex].dropoffAddr !==
-        rideObject.dropoffAddr
-      ) {
-        document.set("dropoffAddr", rideObject.dropoffAddr);
+      if (this.state.SelectedRental.description !== rentalObject.description) {
+        document.set("description", rentalObject.description);
       }
 
-      if (
-        this.state.YourRides[this.state.selectedYourRideIndex].reqTime !==
-        rideObject.reqTime
-      ) {
-        document.set("reqTime", rideObject.reqTime);
-      }
-      if (
-        this.state.YourRides[this.state.selectedYourRideIndex].numOfRiders !==
-        rideObject.numOfRiders
-      ) {
-        document.set("numOfRiders", rideObject.numOfRiders);
+      if (this.state.SelectedRental.address !== rentalObject.address) {
+        document.set("address", rentalObject.address);
       }
 
-      if (
-        this.state.YourRides[this.state.selectedYourRideIndex].extraInstr !==
-        rideObject.extraInstr
-      ) {
-        document.set("extraInstr", rideObject.extraInstr);
+      if (this.state.SelectedRental.imgArray !== rentalObject.imgArray) {
+        document.set("imgArray", rentalObject.imgArray);
       }
 
-      if (
-        this.state.YourRides[this.state.selectedYourRideIndex].pmtType !==
-        rideObject.pmtType
-      ) {
-        document.set("pmtType", rideObject.pmtType);
+      // if (
+      //   this.state.SelectedRental.linkArray !==
+      //   rentalObject.linkArray
+      // ) {
+      //   document.set("linkArray", rentalObject.linkArray);
+      // }
+
+      if (this.state.SelectedRental.howFarAhead !== rentalObject.howFarAhead) {
+        document.set("howFarAhead", rentalObject.howFarAhead);
       }
 
-      if (
-        this.state.YourRides[this.state.selectedYourRideIndex].timeEst !==
-        rideObject.timeEst
-      ) {
-        document.set("timeEst", rideObject.timeEst);
+      if (this.state.SelectedRental.max !== rentalObject.max) {
+        document.set("max", rentalObject.max);
       }
 
-      if (
-        this.state.YourRides[this.state.selectedYourRideIndex].distEst !==
-        rideObject.distEst
-      ) {
-        document.set("distEst", rideObject.distEst);
+      if (this.state.SelectedRental.min !== rentalObject.min) {
+        document.set("min", rentalObject.min);
       }
 
-      if (
-        this.state.YourRides[this.state.selectedYourRideIndex].amt !==
-        rideObject.amt
-      ) {
-        document.set("amt", rideObject.amt);
+      if (this.state.SelectedRental.amenities !== rentalObject.amenities) {
+        document.set("amenities", rentalObject.amenities);
       }
+
+      if (this.state.SelectedRental.rate !== rentalObject.rate) {
+        document.set("rate", rentalObject.rate);
+      }
+
+      if (this.state.SelectedRental.active !== rentalObject.active) {
+        document.set("active", rentalObject.active);
+      }
+
+      if (this.state.SelectedRental.extraInstr !== rentalObject.extraInstr) {
+        document.set("extraInstr", rentalObject.extraInstr);
+      }
+
       await platform.documents.broadcast({ replace: [document] }, identity);
       return document;
 
@@ -1337,43 +1320,55 @@ class App extends React.Component {
       //############################################################
     };
 
-    submitPostDoc()
+    submitRentalDoc()
       .then((d) => {
         let returnedDoc = d.toJSON();
-        console.log("Edited Ride Doc:\n", returnedDoc);
 
-        returnedDoc.replyId = Identifier.from(
-          returnedDoc.replyId,
-          "base64"
-        ).toJSON();
+        returnedDoc.imgArray = JSON.parse(returnedDoc.imgArray);
 
-        let editedRides = this.state.YourRides;
+        console.log("Edited Rental Doc:\n", returnedDoc);
 
-        editedRides.splice(this.state.selectedYourRideIndex, 1, returnedDoc);
+        // returnedDoc.replyId = Identifier.from(
+        //   returnedDoc.replyId,
+        //   "base64"
+        // ).toJSON();
+
+        let editedRentals = this.state.Rentals;
+
+        editedRentals.splice(this.state.selectedRentalIndex, 1, returnedDoc);
 
         this.setState(
           {
-            YourRides: editedRides,
-            isLoadingYourRides: false,
+            Rentals: editedRentals,
+            isLoadingRentals: false,
           },
           () => this.loadIdentityCredits()
         );
       })
       .catch((e) => {
-        console.error("Something went wrong with YourRide Edit:\n", e);
+        console.error("Something went wrong with Rental Edit:\n", e);
         this.setState({
-          isLoadingYourRides: false,
+          isLoadingRentals: false,
         });
       })
       .finally(() => client.disconnect());
   };
 
-  //CONVERT TO RENTAL ->
-  deleteYourRide = () => {
-    console.log("Called Delete Ride");
+  handleDeleteRentalModal = (theRental, index) => {
+    this.setState(
+      {
+        SelectedRental: theRental,
+        selectedRentalIndex: index, //<- Need this for the editingfunction!!
+      },
+      () => this.showModal("DeleteRentalModal")
+    );
+  };
+
+  deleteRental = () => {
+    //console.log("Called Delete Rental");
 
     this.setState({
-      isLoadingYourRides: true,
+      isLoadingRentals: true,
     });
 
     const client = new Dash.Client(
@@ -1384,7 +1379,7 @@ class App extends React.Component {
       )
     );
 
-    const deleteRideDocument = async () => {
+    const deleteNoteDocument = async () => {
       const { platform } = client;
 
       let identity = "";
@@ -1394,7 +1389,7 @@ class App extends React.Component {
         identity = await platform.identities.get(this.state.identity);
       }
 
-      const documentId = this.state.selectedYourRide.$id;
+      const documentId = this.state.SelectedRental.$id;
 
       // Retrieve the existing document
 
@@ -1402,7 +1397,7 @@ class App extends React.Component {
       // Wrong ^^^ Can not use because changed to JSON
 
       const [document] = await client.platform.documents.get(
-        "RADContract.rideReq",
+        "RENTALSContract.rental",
         { where: [["$id", "==", documentId]] }
       );
 
@@ -1411,17 +1406,17 @@ class App extends React.Component {
       return document;
     };
 
-    deleteRideDocument()
+    deleteNoteDocument()
       .then((d) => {
-        console.log("Document deleted:\n", d.toJSON());
+        //console.log("Document deleted:\n", d.toJSON());
 
-        let editedRides = this.state.YourRides;
+        let editedRentals = this.state.Rentals;
 
-        editedRides.splice(this.state.selectedYourRideIndex, 1);
+        editedRentals.splice(this.state.selectedRentalIndex, 1);
 
         this.setState({
-          YourRides: editedRides,
-          isLoadingYourRides: false,
+          Rentals: editedRentals,
+          isLoadingRequests: false,
         });
       })
       .catch((e) => console.error("Something went wrong:\n", e))
@@ -2025,7 +2020,7 @@ class App extends React.Component {
       );
 
       // Sign and submit the document delete transition
-      //await platform.documents.broadcast({ delete: [document] }, identity);
+      await platform.documents.broadcast({ delete: [document] }, identity);
       return document;
     };
 
@@ -2328,7 +2323,7 @@ class App extends React.Component {
       );
 
       // Sign and submit the document delete transition
-      //await platform.documents.broadcast({ delete: [document] }, identity);
+      await platform.documents.broadcast({ delete: [document] }, identity);
       return document;
     };
 
@@ -3588,6 +3583,7 @@ class App extends React.Component {
                         handleSelectedDapp={this.handleSelectedDapp}
                         handleSelectedRental={this.handleSelectedRental}
                         Rentals={this.state.Rentals}
+                        //
                         showModal={this.showModal}
                         isLoadingWallet={this.state.isLoadingWallet}
                         accountBalance={this.state.accountBalance}
@@ -3674,6 +3670,9 @@ class App extends React.Component {
                         identityInfo={this.state.identityInfo}
                         uniqueName={this.state.uniqueName}
                         mode={this.state.mode}
+                        //
+                        handleEditRentalModal={this.handleEditRentalModal}
+                        handleDeleteRentalModal={this.handleDeleteRentalModal}
                         //
                         rental={this.state.SelectedRental}
                         RentalRequests={this.state.RentalRequests}
@@ -3912,6 +3911,33 @@ class App extends React.Component {
         ) : (
           <></>
         )}
+
+        {this.state.isModalShowing &&
+        this.state.presentModal === "EditRentalModal" ? (
+          <EditRentalModal
+            SelectedRental={this.state.SelectedRental}
+            editRental={this.editRental}
+            isModalShowing={this.state.isModalShowing}
+            hideModal={this.hideModal}
+            mode={this.state.mode}
+          />
+        ) : (
+          <></>
+        )}
+
+        {this.state.isModalShowing &&
+        this.state.presentModal === "DeleteRentalModal" ? (
+          <DeleteRentalModal
+            rental={this.state.SelectedRental}
+            deleteRental={this.deleteRental}
+            isModalShowing={this.state.isModalShowing}
+            hideModal={this.hideModal}
+            mode={this.state.mode}
+          />
+        ) : (
+          <></>
+        )}
+
         {this.state.isModalShowing &&
         this.state.presentModal === "MakeRequestModal" ? (
           <MakeRequestModal

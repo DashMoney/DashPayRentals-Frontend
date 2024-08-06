@@ -1,78 +1,71 @@
 import React from "react";
 import Button from "react-bootstrap/Button";
+import Modal from "react-bootstrap/Modal";
 import Form from "react-bootstrap/Form";
+import CloseButton from "react-bootstrap/CloseButton";
 
 import InputGroup from "react-bootstrap/InputGroup";
-import Navbar from "react-bootstrap/Navbar";
-import Container from "react-bootstrap/Container";
-// import Row from "react-bootstrap/Row";
-// import Col from "react-bootstrap/Col";
 
-import ImgsComponent from "./ImgsComponent";
+//import handleDenomDisplay from "../../UnitDisplay";
 
-import { IoMdArrowRoundBack } from "react-icons/io";
+import ImgsComponent from "../ImgsComponent";
 
-//import handleDenomDisplay from "../UnitDisplay";
-
-class CreateRental extends React.Component {
+class EditRentalModal extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      nameInput: "",
-      validName: false,
+      // title
+      nameInput: this.props.SelectedRental.title,
+      validName: true,
       tooLongNameError: false,
 
       // 'Addr',
-      addrInput: "",
-      validAddr: false,
+      addrInput: this.props.SelectedRental.address,
+      validAddr: true,
       tooLongAddrError: false,
 
-      descriptionInput: "",
-      validDescription: false,
+      descriptionInput: this.props.SelectedRental.description,
+      validDescription: true,
       tooLongDescriptionError: false,
 
-      imgStateArray: [],
+      imgStateArray: this.props.SelectedRental.imgArray,
 
       //linkStateArray: [],
-      howFarAheadInput: "", //days in advance can schedule
-      validHowFarAhead: false,
+      howFarAheadInput: this.props.SelectedRental.howFarAhead, //days in advance can schedule
+      validHowFarAhead: true,
       tooLongHowFarAheadError: false,
 
       //'min'
-      minInput: 1,
+      minInput: this.props.SelectedRental.min,
       validMin: true,
       tooLongMinError: false,
 
       //'max'
-      maxInput: 30,
+      maxInput: this.props.SelectedRental.max,
       validMax: true,
       tooLongMaxError: false,
 
-      amenitiesInput: "",
+      amenitiesInput: this.props.SelectedRental.amenities,
       validAmenities: true,
       tooLongAmenitiesError: false,
 
-      //paymentType: "1", //Payment Schedule OR COULD THIS BE PAYBEFORE OR PAYAFTER
-      //Its always before <-
-
-      // numOfBRsInput: 1,
-      // numOfBHsInput: 1,
-
-      // maxOccupents: 3, //sleeps: 4
-      // validMaxOccupents: false,
-
-      dailyRateInput: "",
-      validDailyRate: false,
+      dailyRateInput: (this.props.SelectedRental.rate / 100000000).toFixed(3), //this.props.SelectedRental.rate,
+      validDailyRate: true,
 
       //   'extraInstr',
-      extraInstrInput: "",
+      extraInstrInput: this.props.SelectedRental.extraInstr,
       validextraInstr: true,
       tooLongextraInstrError: false,
 
       //'active'
-      active: true,
+      active: this.props.SelectedRental.active,
     };
   }
+
+  handleCloseClick = () => {
+    this.props.hideModal();
+  };
+
   //imgStateArray
   addFieldOfImg = (stringURL) => {
     this.setState(
@@ -461,9 +454,9 @@ class CreateRental extends React.Component {
     event.preventDefault();
     //console.log(event.target.ControlTextarea1.value);
 
-    let newRental;
+    let editedRental;
 
-    newRental = {
+    editedRental = {
       title: this.state.nameInput,
       description: this.state.descriptionInput,
       address: this.state.addrInput,
@@ -486,12 +479,28 @@ class CreateRental extends React.Component {
       extraInstr: this.state.extraInstrInput,
     };
 
-    console.log(newRental);
-    this.props.createRental(newRental);
-    this.props.handleSelectedDapp("Rentals");
+    //console.log(editedRental);
+    this.props.editRental(editedRental);
+    this.props.hideModal();
   };
 
   render() {
+    let modalBkg = "";
+    let closeButtonColor;
+    let modalBackdrop;
+
+    if (this.props.mode === "primary") {
+      modalBackdrop = "modal-backdrop-nochange";
+      modalBkg = "modal-backcolor-primary";
+      closeButtonColor = <CloseButton onClick={this.handleCloseClick} />;
+    } else {
+      modalBackdrop = "modal-backdrop-dark";
+      modalBkg = "text-bg-dark";
+      closeButtonColor = (
+        <CloseButton onClick={this.handleCloseClick} variant="white" />
+      );
+    }
+
     let dayMinimum = true;
     if (
       Number(this.state.minInput) >= Number(this.state.maxInput) &&
@@ -502,29 +511,27 @@ class CreateRental extends React.Component {
     } else {
       dayMinimum = true;
     }
+
     return (
       <>
-        <Navbar bg={this.props.mode} variant={this.props.mode} fixed="top">
-          <Container>
-            {" "}
-            <Button
-              variant="primary"
-              onClick={() => this.props.handleSelectedDapp("Rentals")}
-            >
-              <IoMdArrowRoundBack size={28} />
-            </Button>{" "}
-            <h3 style={{ textAlign: "center" }}>
-              {this.props.mode === "primary" ? (
-                <b className="lightMode">Create Rental</b>
-              ) : (
-                <b>Create Rental</b>
-              )}
-            </h3>
-            <div style={{ marginRight: "4rem" }}></div>
-          </Container>
-        </Navbar>
-        <div className="bodytext">
-          <>
+        <Modal
+          show={this.props.isModalShowing}
+          backdropClassName={modalBackdrop}
+          contentClassName={modalBkg}
+        >
+          <Modal.Header style={{ paddingBottom: ".2rem" }}>
+            <Modal.Title>
+              <h3>
+                <b>Edit Rental</b>
+              </h3>
+            </Modal.Title>
+            {closeButtonColor}
+          </Modal.Header>
+          <Modal.Body>
+            {/* <h4 style={{ marginBottom: ".1rem" }}>
+              <b>You are Offering:</b>
+            </h4> */}
+
             <Form
               noValidate
               onSubmit={this.handleSubmitClick}
@@ -538,6 +545,7 @@ class CreateRental extends React.Component {
                 <Form.Control
                   type="text"
                   placeholder="Enter name of rental..."
+                  defaultValue={this.props.SelectedRental.title}
                   required
                   isInvalid={this.state.tooLongNameError}
                   isValid={this.state.validName}
@@ -567,6 +575,7 @@ class CreateRental extends React.Component {
                   as="textarea"
                   rows={2}
                   placeholder="Enter address..."
+                  defaultValue={this.props.SelectedRental.address}
                   required
                   isInvalid={this.state.tooLongAddrError}
                   isValid={this.state.validAddr}
@@ -591,6 +600,7 @@ class CreateRental extends React.Component {
                   as="textarea"
                   rows={2}
                   placeholder="Put description here.."
+                  defaultValue={this.props.SelectedRental.description}
                   required
                   isInvalid={this.state.tooLongDescriptionError}
                   isValid={this.state.validDescription}
@@ -614,6 +624,7 @@ class CreateRental extends React.Component {
                 <Form.Control
                   type="text"
                   placeholder="Add amenities here.."
+                  defaultValue={this.props.SelectedRental.amenities}
                   required
                   isInvalid={this.state.tooLongAmenitiesError}
                   isValid={this.state.validAmenities}
@@ -649,6 +660,7 @@ class CreateRental extends React.Component {
                     // max="2000"
                     // defaultValue="15"
                     placeholder="Enter a number (days)"
+                    defaultValue={this.props.SelectedRental.howFarAhead}
                     required
                     isInvalid={this.state.tooLongHowFarAheadError}
                     isValid={this.state.validHowFarAhead}
@@ -679,7 +691,7 @@ class CreateRental extends React.Component {
                     //min="1"
                     //max="999"
                     //placeholder="1"
-                    defaultValue={this.state.minInput}
+                    defaultValue={this.props.SelectedRental.min}
                     required
                     isValid={this.state.validMin}
                     isInvalid={this.state.tooLongMinError}
@@ -708,7 +720,8 @@ class CreateRental extends React.Component {
                     // min="1"
                     //max="999"
                     //placeholder="1"
-                    defaultValue={this.state.maxInput}
+
+                    defaultValue={this.props.SelectedRental.max}
                     required
                     isValid={this.state.validMax}
                     isInvalid={this.state.tooLongMaxError}
@@ -759,6 +772,9 @@ class CreateRental extends React.Component {
                 <Form.Control
                   type="text"
                   placeholder="0.85 for example.."
+                  defaultValue={(
+                    this.props.SelectedRental.rate / 100000000
+                  ).toFixed(3)}
                   required
                   isValid={this.state.validDailyRate}
                   //isInvalid={!this.state.validAmt}
@@ -767,51 +783,6 @@ class CreateRental extends React.Component {
                     (i.e. Must include 2 decimal precision)
                   </p> */}
               </Form.Group>
-
-              {/* NUMBER OF BEDROOMS FORM BELOW */}
-
-              {/* <Form.Group className="mb-3" controlId="formNumOfBRs">
-                <Form.Label>
-                  <h5 style={{ marginTop: ".5rem", marginBottom: ".2rem" }}>
-                    Number of Bedrooms
-                  </h5>
-                </Form.Label>
-                <Form.Select
-                // controlId="formNumOfBRs"
-                >
-                  <option value="1">1</option>
-                  <option value="2">2</option>
-                  <option value="3">3</option>
-                  <option value="4">4</option>
-                  <option value="5">5</option>
-                  <option value="6">6</option>
-                  <option value="7">6+</option>
-                </Form.Select>
-              </Form.Group> */}
-
-              {/* NUMBER OF BATHROOMS FORM BELOW */}
-
-              {/* <Form.Group className="mb-3" controlId="formNumOfBHs">
-                <Form.Label>
-                  <h5 style={{ marginTop: ".5rem", marginBottom: ".2rem" }}>
-                    Number of Bathrooms
-                  </h5>
-                </Form.Label>
-                <Form.Select
-                // controlId="formNumOfBHs"
-                >
-                  <option value="0">0</option>
-                  <option value=".5">.5</option>
-                  <option value="1">1</option>
-                  <option value="1.5">1.5</option>
-                  <option value="2">2</option>
-                  <option value="2.5">2.5</option>
-                  <option value="3">3</option>
-                  <option value="3.5">3.5</option>
-                  <option value="4">4</option>
-                  <option value="5">4+</option>
-                </Form.Select>
-              </Form.Group> */}
 
               <Form.Group className="mb-3" id="formGridCheckbox">
                 {/* <Form.Label>
@@ -842,6 +813,7 @@ class CreateRental extends React.Component {
                   as="textarea"
                   rows={2}
                   placeholder="(Optional)"
+                  defaultValue={this.props.SelectedRental.extraInstr}
                   required
                   isInvalid={this.state.tooLongextraInstrError}
                   isValid={this.state.validextraInstr}
@@ -870,21 +842,21 @@ class CreateRental extends React.Component {
                   dayMinimum &&
                   this.state.validextraInstr ? (
                     <Button variant="primary" type="submit">
-                      <b>Create Rental</b>
+                      <b>Edit Rental</b>
                     </Button>
                   ) : (
                     <Button variant="primary" disabled>
-                      <b>Create Rental</b>
+                      <b>Edit Rental</b>
                     </Button>
                   )}
                 </>
               </div>
             </Form>
-          </>
-        </div>
+          </Modal.Body>
+        </Modal>
       </>
     );
   }
 }
 
-export default CreateRental;
+export default EditRentalModal;

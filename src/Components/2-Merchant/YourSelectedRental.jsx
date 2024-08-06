@@ -2,6 +2,7 @@ import React from "react";
 
 import Spinner from "react-bootstrap/Spinner";
 import Button from "react-bootstrap/Button";
+import Badge from "react-bootstrap/Badge";
 import Form from "react-bootstrap/Form";
 
 import Carousel from "react-bootstrap/Carousel";
@@ -36,6 +37,28 @@ class YourSelectedRental extends React.Component {
       departureMs: "",
     };
   }
+
+  handleActive = () => {
+    if (this.props.rental.active) {
+      return (
+        // <span style={{ color: "#008de4" }}>
+        //   <b>Active</b>
+        // </span>
+        <Badge bg="primary">
+          <b>Active</b>
+        </Badge>
+      );
+    } else {
+      return (
+        // <span style={{ color: "#008de4" }}>
+        //   <b>Inactive</b>
+        // </span>
+        <Badge bg="warning">
+          <b>Inactive</b>
+        </Badge>
+      );
+    }
+  };
 
   // handleArrivalDateCalc = () => {
   //   let dateArr = [];
@@ -259,6 +282,7 @@ class YourSelectedRental extends React.Component {
                 {this.props.rental.title}
               </b>
             </h5>
+            {this.handleActive()}
             <span className="textsmaller">
               {formatDate(
                 this.props.rental.$updatedAt,
@@ -334,17 +358,23 @@ class YourSelectedRental extends React.Component {
           <div className="TwoButtons">
             <Button
               variant="primary"
-              // onClick={() =>
-              //   this.props.handleDeleteRental(this.props.index)
-              // }
+              onClick={() =>
+                this.props.handleDeleteRentalModal(
+                  this.props.rental,
+                  this.props.index
+                )
+              }
             >
               <b>Delete Rental</b>
             </Button>
             <Button
               variant="primary"
-              // onClick={() =>
-              //   this.props.handleEditRental(this.props.index)
-              // }
+              onClick={() =>
+                this.props.handleEditRentalModal(
+                  this.props.rental,
+                  this.props.index
+                )
+              }
             >
               <b>Edit Rental</b>
             </Button>

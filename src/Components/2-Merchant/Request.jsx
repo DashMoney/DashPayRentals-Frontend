@@ -123,32 +123,39 @@ class Request extends React.Component {
     if (confirm !== undefined && rentalReplies.length !== 0) {
       rentalReplyMessages = rentalReplies.map((msg, index) => {
         return (
-          <Card
-            id="comment"
-            key={index}
-            index={index}
-            bg={cardBkg}
-            text={cardText}
-          >
-            <Card.Body>
-              <Card.Title className="cardTitle">
-                {msg.$ownerId === this.props.identity ? (
-                  <b style={{ color: "#008de4" }}>{this.props.uniqueName}</b>
-                ) : (
-                  <b style={{ color: "#008de4" }}>{requestName.label}</b>
-                )}
+          // <Card
+          //   id="comment"
+          //   key={index}
+          //   index={index}
+          //   bg={cardBkg}
+          //   text={cardText}
+          // >
+          //   <Card.Body>
+          <div index={index} key={index}>
+            <div
+              className="ThreadBorder"
+              style={{ paddingTop: ".3rem", marginBottom: ".3rem" }}
+            ></div>
 
-                <span className="textsmaller">
-                  {formatDate(
-                    msg.$createdAt,
-                    this.props.today,
-                    this.props.yesterday
-                  )}
-                </span>
-              </Card.Title>
-              <Card.Text>{msg.msg}</Card.Text>
-            </Card.Body>
-          </Card>
+            <Card.Title className="cardTitle">
+              {msg.$ownerId === this.props.identity ? (
+                <b style={{ color: "#008de4" }}>{this.props.uniqueName}</b>
+              ) : (
+                <b style={{ color: "#008de4" }}>{requestName.label}</b>
+              )}
+
+              <span className="textsmaller">
+                {formatDate(
+                  msg.$createdAt,
+                  this.props.today,
+                  this.props.yesterday
+                )}
+              </span>
+            </Card.Title>
+            <Card.Text>{msg.msg}</Card.Text>
+          </div>
+          //   </Card.Body>
+          // </Card>
         );
       });
     }
@@ -436,7 +443,7 @@ class Request extends React.Component {
             )}
 
             {rentalReplyMessages}
-
+            <p></p>
             {confirm !== undefined ? (
               <>
                 <div className="ButtonRightNoUnderline">

@@ -23,6 +23,7 @@ class YourRentals extends React.Component {
             identity={this.props.identity} //For if my review so can edit
             //uniqueName={this.props.uniqueName}
             handleSelectedRental={this.props.handleSelectedRental}
+            //
           />
         </div>
       );
