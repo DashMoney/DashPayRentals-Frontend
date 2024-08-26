@@ -25,8 +25,6 @@ class YourRsrv extends React.Component {
   };
 
   verifyRequestStatus = (theRequest, theConfirm) => {
-    
-
     if (theConfirm === undefined) {
       //console.log("Awaiting Confirmation");
       return <Badge bg="warning">Awaiting Confirm</Badge>;
@@ -259,7 +257,7 @@ class YourRsrv extends React.Component {
             {/* <h5 style={{ marginTop: ".2rem", textAlign: "center" }}>
               {" "}
               <b style={{ color: "#008de4" }}>
-                {handleDenomDisplay(rental.rate)}
+                {handleDenomDisplay(this.props.whichNetwork,rental.rate)}
               </b>{" "}
               per day
             </h5> */}
@@ -272,7 +270,10 @@ class YourRsrv extends React.Component {
             >
               Total Cost{" "}
               <b style={{ marginLeft: "1rem", color: "#008de4" }}>
-                {handleDenomDisplay(this.props.request.amt)}
+                {handleDenomDisplay(
+                  this.props.whichNetwork,
+                  this.props.request.amt
+                )}
               </b>
             </h4>
 

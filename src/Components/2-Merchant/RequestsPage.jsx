@@ -81,6 +81,7 @@ class RequestsPage extends React.Component {
           ) : (
             <>
               <Requests
+                whichNetwork={this.props.whichNetwork}
                 Rentals={this.props.Rentals}
                 RentalRequests={this.props.RentalRequests}
                 RentalConfirms={this.props.RentalConfirms}
@@ -95,7 +96,9 @@ class RequestsPage extends React.Component {
                 handleMerchantRequestFilter={
                   this.props.handleMerchantRequestFilter
                 }
-                handleDeleteBlockConfirmModal={this.props.handleDeleteBlockConfirmModal}
+                handleDeleteBlockConfirmModal={
+                  this.props.handleDeleteBlockConfirmModal
+                }
                 //
                 identity={this.props.identity}
                 uniqueName={this.props.uniqueName}

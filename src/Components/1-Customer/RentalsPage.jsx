@@ -45,6 +45,7 @@ class RentalsPage extends React.Component {
           )}
 
           <Rentals
+            whichNetwork={this.props.whichNetwork}
             mode={this.props.mode}
             Rentals={this.props.Rentals}
             //handleSelectedDapp={this.props.handleSelectedDapp}

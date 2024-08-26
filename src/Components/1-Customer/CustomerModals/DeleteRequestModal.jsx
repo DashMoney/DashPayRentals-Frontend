@@ -183,7 +183,7 @@ class DeleteRequestModal extends React.Component {
             >
               Total Cost{" "}
               <b style={{ marginLeft: "1rem", color: "#008de4" }}>
-                {handleDenomDisplay(Number(calcAmt))}
+                {handleDenomDisplay(this.props.whichNetwork, Number(calcAmt))}
               </b>
             </h4>
           </Modal.Body>

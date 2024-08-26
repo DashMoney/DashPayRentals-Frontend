@@ -3555,6 +3555,7 @@ class App extends React.Component {
                     <>
                       <AccountLogin
                         isLoginComplete={isLoginComplete}
+                        whichNetwork={this.state.whichNetwork}
                         mnemonic={this.state.mnemonic}
                         handleAccountRetry={this.handleAccountRetry}
                         showModal={this.showModal}
@@ -3584,6 +3585,7 @@ class App extends React.Component {
                   {this.state.selectedDapp === "Rentals" ? (
                     <>
                       <YourRentalsPage
+                        whichNetwork={this.state.whichNetwork}
                         isLoadingRentals={this.state.isLoadingRentals}
                         identity={this.state.identity}
                         identityInfo={this.state.identityInfo}
@@ -3604,6 +3606,7 @@ class App extends React.Component {
                   {this.state.selectedDapp === "Requests" ? (
                     <>
                       <RequestsPage
+                        whichNetwork={this.state.whichNetwork}
                         isLoginComplete={isLoginComplete}
                         isLoadingRentals={this.state.isLoadingRentals}
                         isLoadingRequests={this.state.isLoadingRequests}
@@ -3673,6 +3676,7 @@ class App extends React.Component {
                       {/* DONT HANDLE THE LOGIN SEPARATED PARTS HERE DO THAT IN THE COMPONENT AND PASS THE **ISLOGINCOMPLETE** THROUGH PROPS */}
                       <YourSelectedRental
                         isLoginComplete={isLoginComplete}
+                        whichNetwork={this.state.whichNetwork}
                         // could use ^^^ for allowing to schedule request
                         isLoadingRentals={this.state.isLoadingRentals}
                         identity={this.state.identity}
@@ -3688,7 +3692,6 @@ class App extends React.Component {
                         //
                         MerchantId={this.state.MerchantId}
                         DataContractRENTALS={this.state.DataContractRENTALS}
-                        whichNetwork={this.state.whichNetwork}
                         //
                         handleBlockConfirmModal={this.handleBlockConfirmModal}
                         //
@@ -3729,6 +3732,7 @@ class App extends React.Component {
                     <>
                       {/* DONT HANDLE THE LOGIN SEPARATED PARTS HERE DO THAT IN THE COMPONENT AND PASS THE **ISLOGINCOMPLETE** THROUGH PROPS */}
                       <RentalsPage
+                        whichNetwork={this.state.whichNetwork}
                         isLoginComplete={isLoginComplete}
                         isLoadingRentals={this.state.isLoadingRentals}
                         identity={this.state.identity}
@@ -3750,6 +3754,7 @@ class App extends React.Component {
                       {/* DONT HANDLE THE LOGIN SEPARATED PARTS HERE DO THAT IN THE COMPONENT AND PASS THE **ISLOGINCOMPLETE** THROUGH PROPS */}
                       <SelectedRentalPage
                         isLoginComplete={isLoginComplete}
+                        whichNetwork={this.state.whichNetwork}
                         // could use ^^^ for allowing to schedule request
                         isLoadingRentals={this.state.isLoadingRentals}
                         identity={this.state.identity}
@@ -3763,7 +3768,6 @@ class App extends React.Component {
                         MerchantId={this.state.MerchantId}
                         MerchantNameDoc={this.state.MerchantNameDoc}
                         DataContractRENTALS={this.state.DataContractRENTALS}
-                        whichNetwork={this.state.whichNetwork}
                         //
                         handleMakeRequestModal={this.handleMakeRequestModal}
                         //
@@ -3778,6 +3782,7 @@ class App extends React.Component {
                   {this.state.selectedDapp === "Requests" ? (
                     <>
                       <YourRsrvsPage
+                        whichNetwork={this.state.whichNetwork}
                         isLoginComplete={isLoginComplete}
                         // pullInitialTriggerCUSTOMER={
                         //   this.pullInitialTriggerCUSTOMER
@@ -3888,6 +3893,7 @@ class App extends React.Component {
         {this.state.isModalShowing &&
         this.state.presentModal === "TopUpIdentityModal" ? (
           <TopUpIdentityModal
+            whichNetwork={this.state.whichNetwork}
             accountBalance={this.state.accountBalance}
             isLoadingWallet={this.state.isLoadingWallet}
             isModalShowing={this.state.isModalShowing}
@@ -3968,6 +3974,7 @@ class App extends React.Component {
         {this.state.isModalShowing &&
         this.state.presentModal === "DeleteRequestModal" ? (
           <DeleteRequestModal
+            whichNetwork={this.state.whichNetwork}
             SelectedRental={this.state.SelectedRental}
             selectedRequest={this.state.selectedRequest}
             MerchantNameDoc={this.state.MerchantNameDoc}
@@ -4016,6 +4023,7 @@ class App extends React.Component {
         {this.state.isModalShowing &&
         this.state.presentModal === "DeleteBlockConfirmModal" ? (
           <DeleteBlockConfirmModal
+            whichNetwork={this.state.whichNetwork}
             //SelectedRental={this.state.SelectedRental}
             selectedConfirm={this.state.selectedConfirm}
             //MerchantNameDoc={this.state.MerchantNameDoc}

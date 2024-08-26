@@ -336,7 +336,7 @@ class BlockConfirmModal extends React.Component {
                 >
                   Total Cost{" "}
                   <b style={{ marginLeft: "1rem", color: "#008de4" }}>
-                    {handleDenomDisplay(this.props.request.amt)}
+                    {handleDenomDisplay(this.props.whichNetwork,this.props.request.amt)}
                   </b>
                 </h4> */}
                 <p></p>

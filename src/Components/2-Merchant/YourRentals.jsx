@@ -14,6 +14,7 @@ class YourRentals extends React.Component {
       return (
         <div key={index} style={{ marginBottom: "0.1rem" }}>
           <YourRental
+            whichNetwork={this.props.whichNetwork}
             // key={index}
             mode={this.props.mode}
             index={index}

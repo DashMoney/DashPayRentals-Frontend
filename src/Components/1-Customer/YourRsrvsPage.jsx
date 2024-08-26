@@ -88,6 +88,7 @@ class YourRsrvsPage extends React.Component {
           ) : (
             <>
               <YourRsrvs
+                whichNetwork={this.props.whichNetwork}
                 mode={this.props.mode}
                 identity={this.props.identity}
                 MerchantNameDoc={this.props.MerchantNameDoc}

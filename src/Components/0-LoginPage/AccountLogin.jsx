@@ -70,7 +70,12 @@ class AccountLogin extends React.Component {
                       <div>
                         <b>Wallet Balance</b>
                         <h4 style={{ color: "#008de4" }}>
-                          <b>{handleDenomDisplay(this.props.accountBalance)}</b>
+                          <b>
+                            {handleDenomDisplay(
+                              this.props.whichNetwork,
+                              this.props.accountBalance
+                            )}
+                          </b>
                         </h4>
                       </div>
 

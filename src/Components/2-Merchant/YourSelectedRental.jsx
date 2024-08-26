@@ -338,7 +338,10 @@ class YourSelectedRental extends React.Component {
           <h5 style={{ marginTop: ".2rem", textAlign: "center" }}>
             {" "}
             <b style={{ color: "#008de4" }}>
-              {handleDenomDisplay(this.props.rental.rate)}
+              {handleDenomDisplay(
+                this.props.whichNetwork,
+                this.props.rental.rate
+              )}
             </b>{" "}
             per day
           </h5>

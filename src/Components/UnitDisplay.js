@@ -1,14 +1,32 @@
-export default function handleDenomDisplay(duffs, qty = 1) {
-  if (duffs >= 1000000) {
-    return `${((duffs * qty) / 100000000).toFixed(3)} Dash`;
-  } else if (duffs >= 1000) {
-    return `${((duffs * qty) / 1000).toFixed(0)} kD`;
-  } else if (duffs > 0) {
-    return "dust";
-  } else if (duffs === 0) {
-    return "0.00 Dash";
+export default function handleDenomDisplay(
+  theNetwork = "testnet",
+  duffs,
+  qty = 1
+) {
+  if (theNetwork === "testnet") {
+    if (duffs >= 1000000) {
+      return `${((duffs * qty) / 100000000).toFixed(3)} tDash`;
+    } else if (duffs >= 1000) {
+      return `${((duffs * qty) / 1000).toFixed(0)} tkD`;
+    } else if (duffs > 0) {
+      return "tdust";
+    } else if (duffs === 0) {
+      return "0.00 tDash";
+    } else {
+      return "tError";
+    }
   } else {
-    return "Error";
+    if (duffs >= 1000000) {
+      return `${((duffs * qty) / 100000000).toFixed(3)} Dash`;
+    } else if (duffs >= 1000) {
+      return `${((duffs * qty) / 1000).toFixed(0)} kD`;
+    } else if (duffs > 0) {
+      return "dust";
+    } else if (duffs === 0) {
+      return "0.00 Dash";
+    } else {
+      return "Error";
+    }
   }
 }
 

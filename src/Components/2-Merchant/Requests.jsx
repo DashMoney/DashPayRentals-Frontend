@@ -61,6 +61,7 @@ class Requests extends React.Component {
         return (
           <div key={index} style={{ marginBottom: "0.1rem" }}>
             <Request
+              whichNetwork={this.props.whichNetwork}
               //key={index}
 
               mode={this.props.mode}
@@ -95,6 +96,7 @@ class Requests extends React.Component {
         return (
           <div key={index} style={{ marginBottom: "0.1rem" }}>
             <Request
+              whichNetwork={this.props.whichNetwork}
               //key={index}
               mode={this.props.mode}
               index={index}
@@ -146,7 +148,9 @@ class Requests extends React.Component {
               handleSelectedYourRsrv={this.props.handleSelectedYourRsrv}
               handleSelectedDapp={this.props.handleSelectedDapp}
               handleSelectedRental={this.props.handleSelectedRental}
-              handleDeleteBlockConfirmModal={this.props.handleDeleteBlockConfirmModal}
+              handleDeleteBlockConfirmModal={
+                this.props.handleDeleteBlockConfirmModal
+              }
               //
               isLoadingRentals={this.props.isLoadingRentals}
               isLoadingRequests={this.props.isLoadingRequests}

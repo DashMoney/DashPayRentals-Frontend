@@ -359,7 +359,7 @@ class ConfirmRequestModal extends React.Component {
                 >
                   Total Cost{" "}
                   <b style={{ marginLeft: "1rem", color: "#008de4" }}>
-                    {handleDenomDisplay(calcAmt)}
+                    {handleDenomDisplay(this.props.whichNetwork, calcAmt)}
                   </b>
                 </h4>
                 <p></p>

@@ -40,7 +40,7 @@ class YourRentalsPage extends React.Component {
                 <div className="paddingBadge">
                   <b>Wallet Balance</b>
                   <h4 style={{ color: "#008de4" }}>
-                    <b>{handleDenomDisplay(this.props.accountBalance, 1)}</b>
+                    <b>{handleDenomDisplay(this.props.whichNetwork,this.props.accountBalance, 1)}</b>
                   </h4>
                 </div>
               </>
@@ -82,6 +82,7 @@ class YourRentalsPage extends React.Component {
 
           <p></p>
           <YourRentals
+          whichNetwork={this.props.whichNetwork}
             Rentals={this.props.Rentals}
             identity={this.props.identity}
             uniqueName={this.props.uniqueName}

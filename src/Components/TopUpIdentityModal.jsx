@@ -83,7 +83,13 @@ class TopUpIdentityModal extends React.Component {
                 <b>Dash Balance</b>
 
                 <h4 style={{ color: "#008de4" }}>
-                  <b>{handleDenomDisplay(this.props.accountBalance, 1)}</b>
+                  <b>
+                    {handleDenomDisplay(
+                      this.props.whichNetwork,
+                      this.props.accountBalance,
+                      1
+                    )}
+                  </b>
                 </h4>
               </div>
 
