@@ -7,7 +7,7 @@ export default function dapiClientNoWallet(theNetwork) {
         contractId: "GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec",
       },
       RENTALSContract: {
-        contractId: "5mxuMjDW9FBFysnyoX31jAo1QpvvBFRhrJcHNTeYM1Zx",
+        contractId: "HjHocG4oyLHgpnRMJEGagaTyrx6HaboCiGdcBzY3RKPU",
       },
     },
   };

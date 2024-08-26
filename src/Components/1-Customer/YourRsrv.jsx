@@ -25,11 +25,7 @@ class YourRsrv extends React.Component {
   };
 
   verifyRequestStatus = (theRequest, theConfirm) => {
-    // if (ride.txId1 !== "") {
-    //   //pass to the verify payment function ->
-    //   // console.log("Called Verify Payment Status");
-    //   return this.verifyPaymentStatus(ride);
-    // }
+    
 
     if (theConfirm === undefined) {
       //console.log("Awaiting Confirmation");

@@ -209,7 +209,7 @@ class App extends React.Component {
         //   departDate: Date.now() + 20000000,
         //   rentalId: "ajlsku4infalu",
         //   amt: 900000000,
-        //   txId: "",
+        //   txObj: "",
         //   $createdAt: Date.now() - 500000,
         //   $updatedAt: Date.now() - 500000,
         // },
@@ -1197,10 +1197,13 @@ class App extends React.Component {
         //   $updatedAt: returnedDoc.$updatedAt,
         // };
 
-        this.setState({
-          Rentals: [rental, ...this.state.Rentals],
-          isLoadingRentals: false,
-        });
+        this.setState(
+          {
+            Rentals: [rental, ...this.state.Rentals],
+            isLoadingRentals: false,
+          },
+          () => this.loadIdentityCredits()
+        );
       })
       .catch((e) => {
         console.error("Something went wrong with rental creation:\n", e);
@@ -1414,10 +1417,13 @@ class App extends React.Component {
 
         editedRentals.splice(this.state.selectedRentalIndex, 1);
 
-        this.setState({
-          Rentals: editedRentals,
-          isLoadingRequests: false,
-        });
+        this.setState(
+          {
+            Rentals: editedRentals,
+            isLoadingRequests: false,
+          },
+          () => this.loadIdentityCredits()
+        );
       })
       .catch((e) => console.error("Something went wrong:\n", e))
       .finally(() => client.disconnect());
@@ -1798,7 +1804,7 @@ class App extends React.Component {
       )
     );
 
-    const submitReviewDoc = async () => {
+    const submitConfirmDoc = async () => {
       const { platform } = client;
 
       let identity = "";
@@ -1842,7 +1848,7 @@ class App extends React.Component {
       return rentalDocument;
     };
 
-    submitReviewDoc()
+    submitConfirmDoc()
       .then((d) => {
         let returnedDoc = d.toJSON();
 
@@ -2215,7 +2221,6 @@ class App extends React.Component {
         ),
 
         //toId
-        //txId
         //txObj
         //msg
       };
@@ -2471,8 +2476,12 @@ class App extends React.Component {
               "base64"
             ).toJSON();
             console.log("newConfirm:\n", returnedDoc);
-            docArray = [...docArray, returnedDoc];
+            //Filter so that only the merchant send a confirm to the requester ->
+            if (returnedDoc.$ownerId === this.state.MerchantId) {
+              docArray = [...docArray, returnedDoc];
+            }
           }
+
           this.getYourRsrvsReplies(docArray, theDocArray);
         }
       })

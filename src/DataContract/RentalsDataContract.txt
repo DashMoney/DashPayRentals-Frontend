@@ -1,0 +1,395 @@
+//THIS IS THE Rentals - REGISTER DATA CONTRACT
+
+const Dash = require("dash");
+
+const clientOpts = {
+  network: "testnet", //<- CHANGE***
+  wallet: {
+    mnemonic: "Your 12 words", //<- CHANGE***
+    // adapter: LocalForage.createInstance,
+    unsafeOptions: {
+      skipSynchronizationBeforeHeight: 1029000, //<- CHANGE***
+    },
+  },
+};
+
+const client = new Dash.Client(clientOpts);
+
+const registerContract = async () => {
+  const { platform } = client;
+  const identity = await platform.identities.get(
+    "Your IdentityId" //<- CHANGE***
+  );
+
+  //Rental <- request/confirm(block) <- confirm <- replies/pmts
+
+  const contractDocuments = {
+    rental: {
+      type: "object",
+      indices: [
+        {
+          //This is the FIND YOUR(Merchant) RENTALS
+          name: "ownerIdupdatedAt",
+          properties: [{ $ownerId: "asc" }, { $updatedAt: "asc" }],
+          unique: false,
+        },
+      ],
+      properties: {
+        title: {
+          type: "string",
+          minLength: 0,
+          maxLength: 64,
+          position: 0,
+        },
+
+        description: {
+          type: "string",
+          minLength: 0,
+          maxLength: 650,
+          position: 1,
+        },
+
+        address: {
+          type: "string",
+          minLength: 0,
+          maxLength: 450,
+          position: 2,
+        },
+
+        imgArray: {
+          type: "string",
+          //minLength: 64,
+          maxLength: 3000,
+          position: 3,
+        }, // JSON STRINGIFY AND PARSE
+
+        linkArray: {
+          //one url/http address
+          type: "string",
+          //minLength: 64,
+          maxLength: 3000,
+          position: 4,
+        }, // JSON STRINGIFY AND PARSE
+
+        howFarAhead: {
+          //Required
+
+          type: "integer",
+          minimum: 0,
+          maximum: 999999,
+          position: 5,
+        },
+
+        min: {
+          //Required
+
+          type: "integer",
+          minimum: 0,
+          maximum: 999999,
+          position: 6,
+        },
+
+        max: {
+          //Required
+
+          type: "integer",
+          minimum: 0,
+          maximum: 999999,
+          position: 7,
+        },
+
+        amenities: {
+          type: "string",
+          minLength: 0,
+          maxLength: 650,
+          position: 8,
+        },
+
+        // dailyRate: "",
+        rate: {
+          type: "integer",
+          minimum: 0,
+          maximum: 100000000000, // 1,000 Dash is max
+          position: 9,
+        },
+
+        extraInstr: {
+          type: "string",
+          minLength: 0,
+          maxLength: 650,
+          position: 10,
+        },
+        active: {
+          type: "boolean",
+          position: 11,
+        },
+      },
+
+      required: [
+        "howFarAhead",
+        "min",
+        "max",
+        "rate",
+        "active",
+        "$createdAt",
+        "$updatedAt",
+      ],
+      additionalProperties: false,
+    },
+    request: {
+      //rentalRequest and payment
+      type: "object",
+      indices: [
+        {
+          //
+          //1) Customer Request -> their sent requests
+          //
+          //Customer Query of Customer's Request
+          //
+          name: "ownerIdrentalIdcreatedAt",
+
+          properties: [
+            { $ownerId: "asc" }, // Customer's IdentityId
+            { rentalId: "asc" }, // the rental (USE ARRAY***)
+            { $createdAt: "asc" },
+          ],
+          unique: false,
+        },
+
+        // Merchant query of Customer Requests(most recent)
+
+        {
+          name: "rentalIdcreatedAt",
+          properties: [
+            { rentalId: "asc" }, //the rental (USE ARRAY***)
+            { $createdAt: "asc" }, //most recent
+          ],
+          unique: false,
+        },
+
+        {
+          //This is the FIND YOUR(Customer) Rental Requests
+          name: "ownerIdcreatedAt",
+          properties: [{ $ownerId: "asc" }, { $createdAt: "asc" }],
+          unique: false,
+        },
+      ],
+
+      properties: {
+        arriveDate: {
+          type: "integer",
+          minimum: 0,
+          maximum: 99999999999999,
+          position: 0,
+        },
+
+        departDate: {
+          type: "integer",
+          minimum: 0,
+          maximum: 99999999999999,
+          position: 1,
+        },
+        rentalId: {
+          type: "array",
+          byteArray: true,
+          minItems: 32,
+          maxItems: 32,
+          contentMediaType: "application/x.dash.dpp.identifier",
+          position: 2,
+        },
+        amt: {
+          type: "integer",
+          minimum: 0,
+          maximum: 100000000000, // 1,000 Dash is max
+          position: 3,
+        },
+
+        toId: {
+          type: "array",
+          byteArray: true,
+          minItems: 32,
+          maxItems: 32,
+          contentMediaType: "application/x.dash.dpp.identifier",
+          position: 4,
+        },
+
+        txObj: {
+          type: "string",
+
+          maxLength: 2000,
+          position: 5,
+        }, // JSON STRINGIFY AND PARSE
+        msg: {
+          type: "string",
+          minLength: 0,
+          maxLength: 450,
+          position: 6,
+        },
+      },
+      required: [
+        "arriveDate",
+        "departDate",
+        "rentalId",
+        "amt",
+        "$createdAt",
+        "$updatedAt",
+      ],
+      additionalProperties: false,
+    },
+    confirm: {
+      type: "object",
+      indices: [
+        //This is the FIND YOUR Requests
+        {
+          name: "scheduleBuilder",
+
+          properties: [
+            { $ownerId: "asc" }, //owner(Merchant) - IdentityId
+            { rentalId: "asc" }, //the rental
+            { arriveDate: "asc" },
+          ],
+          unique: false,
+        },
+
+        {
+          //Customer query of Merchant Confirm
+          // HAVE TO CHECK TO MAKE SURE THE $OWNERID IS OF THE MERCHANT AND NOT SOMEONE RANDOM <- ***
+          name: "reqId",
+          properties: [{ reqId: "asc" }],
+          unique: false,
+        },
+
+        //Merchant query of MOST RECENT
+
+        {
+          name: "ownerIdrentalIdcreatedAt",
+          properties: [
+            { $ownerId: "asc" },
+            { rentalId: "asc" }, //the rental (USE ARRAY***)
+            // { reqId: 'asc' }, //of the owner identity- signal Block
+            { $createdAt: "asc" },
+          ],
+          unique: false,
+        },
+
+        {
+          //This is the FIND YOUR POSTS
+          name: "ownerIdcreatedAt",
+          properties: [{ $ownerId: "asc" }, { $createdAt: "asc" }],
+          unique: false,
+        },
+      ],
+
+      properties: {
+        arriveDate: {
+          type: "integer",
+          minimum: 0,
+          maximum: 99999999999999,
+          position: 0,
+        },
+
+        departDate: {
+          type: "integer",
+          minimum: 0,
+          maximum: 99999999999999,
+          position: 1,
+        },
+        rentalId: {
+          type: "array",
+          byteArray: true,
+          minItems: 32,
+          maxItems: 32,
+          contentMediaType: "application/x.dash.dpp.identifier",
+          position: 2,
+        },
+        //BLOCKING COULD JUST BE REQID = RENTALID OR OWNERID
+        reqId: {
+          // replyId msgId <= ***
+          type: "array",
+          byteArray: true,
+          minItems: 32,
+          maxItems: 32,
+          contentMediaType: "application/x.dash.dpp.identifier",
+          position: 3,
+        },
+        toId: {
+          //Optional
+          //This is the CUSTOMER ownerId so if delete..
+          type: "array",
+          byteArray: true,
+          minItems: 32,
+          maxItems: 32,
+          contentMediaType: "application/x.dash.dpp.identifier",
+          position: 4,
+        },
+        amt: {
+          type: "integer",
+          minimum: 0,
+          maximum: 100000000000, // 1,000 Dash is max
+          position: 5,
+        },
+        pmtObj: {
+          type: "string",
+          //minLength: 64,
+          maxLength: 4000,
+          position: 6,
+        }, // JSON STRINGIFY AND PARSE
+      },
+      required: [
+        "arriveDate",
+        "departDate",
+        "rentalId",
+        "reqId",
+        "amt",
+        "$createdAt",
+        "$updatedAt",
+      ],
+      additionalProperties: false,
+    },
+    reply: {
+      type: "object",
+      indices: [
+        {
+          name: "confirmIdcreatedAt",
+          properties: [{ confirmId: "asc" }, { $createdAt: "asc" }],
+          unique: false,
+        },
+        {
+          //This is the FIND YOUR POSTS
+          name: "ownerIdcreatedAt",
+          properties: [{ $ownerId: "asc" }, { $createdAt: "asc" }],
+          unique: false,
+        },
+      ],
+      properties: {
+        confirmId: {
+          type: "array",
+          byteArray: true,
+          minItems: 32,
+          maxItems: 32,
+          contentMediaType: "application/x.dash.dpp.identifier",
+          position: 0,
+        },
+        msg: {
+          type: "string",
+          minLength: 0,
+          maxLength: 800,
+          position: 1,
+        },
+      },
+      required: ["confirmId", "$createdAt", "$updatedAt"],
+      additionalProperties: false,
+    },
+  };
+
+  const contract = await platform.contracts.create(contractDocuments, identity);
+  console.dir({ contract: contract.toJSON() });
+
+  await platform.contracts.publish(contract, identity);
+  return contract;
+};
+
+registerContract()
+  .then((d) => console.log("Contract registered:\n", d.toJSON()))
+  .catch((e) => console.error("Something went wrong:\n", e))
+  .finally(() => client.disconnect());

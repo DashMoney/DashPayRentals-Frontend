@@ -357,7 +357,7 @@ class SelectedRentalPage extends React.Component {
             dateMax={dateMax}
             dateMaxForm={dateMaxForm}
           />
-          {this.props.isLoginComplete ? (
+          {this.props.isLoginComplete && this.props.rental.active ? (
             <>
               <h6 style={{ color: "#008de4" }}>Make a Reservation</h6>
               {/* Date FORM BELOW */}

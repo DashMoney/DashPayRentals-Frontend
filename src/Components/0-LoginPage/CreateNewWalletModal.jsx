@@ -7,19 +7,6 @@ import "./CreateNewWalletModal.css";
 
 import Dash from "dash";
 
-const clientOpts = {
-  network: "testnet",
-  wallet: {
-    mnemonic: null, // this indicates that we want a new wallet to be generated
-    // if you want to get a new address for an existing wallet
-    // replace 'null' with an existing wallet mnemonic
-    offlineMode: true, // this indicates we don't want to sync the chain
-    // it can only be used when the mnemonic is set to 'null'
-  },
-};
-
-const client = new Dash.Client(clientOpts);
-
 class CreateNewWalletModal extends React.Component {
   constructor(props) {
     super(props);
@@ -32,6 +19,19 @@ class CreateNewWalletModal extends React.Component {
   }
 
   createWallet = async () => {
+    const clientOpts = {
+      network: this.props.whichNetwork,
+      wallet: {
+        mnemonic: null, // this indicates that we want a new wallet to be generated
+        // if you want to get a new address for an existing wallet
+        // replace 'null' with an existing wallet mnemonic
+        offlineMode: true, // this indicates we don't want to sync the chain
+        // it can only be used when the mnemonic is set to 'null'
+      },
+    };
+
+    const client = new Dash.Client(clientOpts);
+
     const account = await client.getWalletAccount();
 
     const dashmnemonic = client.wallet.exportWallet();
@@ -87,6 +87,16 @@ class CreateNewWalletModal extends React.Component {
             <p>
               <b>You will need to save the 12 word mnemonic!</b>{" "}
             </p>
+            {this.props.whichNetwork === "testnet" ? (
+              <>
+                {" "}
+                <p style={{ color: "yellow" }}>
+                  <b>This site is currently operating on testnet!</b>
+                </p>
+              </>
+            ) : (
+              <></>
+            )}
             <Alert variant="primary">
               <Alert.Heading>Mnemonic(12 words):</Alert.Heading>
               <p>{this.state.response.mnemonic}</p>

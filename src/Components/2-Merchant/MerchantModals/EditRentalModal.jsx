@@ -77,7 +77,7 @@ class EditRentalModal extends React.Component {
   };
 
   removeFieldOfImg = () => {
-    let removedFieldArray = this.state.imgStateArray;
+    let removedFieldArray = new Array(...this.state.imgStateArray);
     removedFieldArray.pop();
     this.setState({
       imgStateArray: removedFieldArray,
