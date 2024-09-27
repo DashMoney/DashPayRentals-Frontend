@@ -3648,6 +3648,7 @@ class App extends React.Component {
           handleMode={this.handleMode}
           mode={this.state.mode}
           loggedInAs={loggedInAs}
+          isLoginComplete={isLoginComplete}
           showModal={this.showModal}
           whichNetwork={this.state.whichNetwork}
           isLoggedIn={this.state.isLoggedIn}
