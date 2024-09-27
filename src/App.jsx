@@ -45,7 +45,7 @@ import FrontEndExplaination from "./Components/FrontEndExplaination";
 import CreateNewWalletModal from "./Components/0-LoginPage/CreateNewWalletModal";
 import RegisterIdentityModal from "./Components/0-LoginPage/RegisterIdentityModal";
 
-import RegisterNameModal from "./Components/0-LoginPage/RegisterNameModal";
+import RegisterProxyModal from "./Components/0-LoginPage/RegisterProxyModal";
 //import WalletTXModal from "./Components/WalletTXModal";
 
 import SendFundsModal from "./Components/0-LoginPage/SendFundsModal";
@@ -73,7 +73,8 @@ class App extends React.Component {
       isLoadingIdentity: true,
       isLoadingIdInfo: true,
       //isLoadingCreditTransfer: false,
-      isLoadingName: true,
+      //isLoadingName: true,
+      isLoadingProxy: true,
       isLoadingMerchantName: true,
 
       isLoadingWallet: true, //For wallet for topup
@@ -96,7 +97,22 @@ class App extends React.Component {
       identity: "",
       identityInfo: "",
       identityRaw: "",
-      uniqueName: "",
+      //uniqueName: "",
+      proxyName: "",
+
+      ProxyDoc: "", //{
+      //   $ownerId: "ha84h9aguia4khai4",
+      //   controlId: "thisIdentity",
+      //   $createdAt: Date.now() - 1000000,
+      //},
+      ProxyController: {
+        proxyList: [],
+        //proxyList: ["3498g7w4o4h9qph4"]
+      },
+      ProxyNameDoc: "",
+
+      CustomerProxy1: false,
+      CustomerProxy2: false,
 
       accountBalance: "",
       accountHistory: "",
@@ -463,15 +479,15 @@ class App extends React.Component {
   };
 
   //ACCOUNT LOGIN FUNCTIONS => SIMPLE LOGIN FIRST
-  triggerNameLoading = () => {
+  triggerProxyLoading = () => {
     this.setState({
-      isLoadingName: true,
+      isLoadingProxy: true,
     });
   };
 
-  triggerNameNotLoading = () => {
+  triggerProxyNotLoading = () => {
     this.setState({
-      isLoadingName: false,
+      isLoadingProxy: false,
     });
   };
 
@@ -535,18 +551,18 @@ class App extends React.Component {
               if (
                 val !== null ||
                 typeof val.identity !== "string" ||
-                val.identity === "" ||
-                val.name === "" ||
-                typeof val.name !== "string"
+                val.identity === "" //||
+                //val.name === "" ||
+                //typeof val.name !== "string"
               ) {
                 // console.log(val.identity);
                 this.setState(
                   {
                     platformLogin: true,
                     identity: val.identity,
-                    uniqueName: val.name,
+                    // uniqueName: val.name,
                     walletId: walletIdToTry,
-                    isLoadingName: false,
+                    isLoadingProxy: false,
                     isLoadingIdentity: false,
                   },
                   () => this.handlePlatformLoginSeq(val.identity, theMnemonic)
@@ -559,7 +575,7 @@ class App extends React.Component {
                   {
                     platformLogin: false,
                     identity: "",
-                    uniqueName: "",
+                    //uniqueName: "",
                     walletId: walletIdToTry,
                   },
                   () => this.getWalletAndIdentitywithMnem(theMnemonic)
@@ -592,6 +608,7 @@ class App extends React.Component {
   handlePlatformLoginSeq = (theIdentity, theMnemonic) => {
     //
     this.getIdentityInfo(theIdentity);
+    this.getProxyDoc(theIdentity);
     this.getWalletPlatformLogin(theMnemonic);
     //this.getAliasfromIdentity(theIdentity);
     //
@@ -644,7 +661,7 @@ class App extends React.Component {
 
             //These are not called so end loading
             isLoadingIdInfo: false,
-            isLoadingName: false,
+            isLoadingProxy: false,
 
             identity: "no identity",
             //uniqueName: '', //Kicks out of platform login if identity is disabled but LF still retains.
@@ -659,6 +676,28 @@ class App extends React.Component {
             },
             () => this.conductFullLogin(d[0])
           );
+          //   //
+          //   //ADDS IDENTITY TO LF AFTER Login with already created proxy account and saves merchant login
+          //   //  //******************** */
+          let DashMoneyLF = LocalForage.createInstance({
+            name: "dashmoney-platform-login",
+          });
+          let lfObject = {
+            identity: d[0],
+          };
+
+          DashMoneyLF.setItem(this.state.walletId, lfObject)
+            .then((d) => {
+              //return DashMoneyLF.getItem(walletId);
+              console.log("Return from LF setitem:", d);
+            })
+            .catch((err) => {
+              console.error(
+                "Something went wrong setting to DashMoneyLF:\n",
+                err
+              );
+            });
+          //   // //******************** */
         }
       })
       .catch((e) => {
@@ -674,11 +713,10 @@ class App extends React.Component {
       .finally(() => client.disconnect());
   };
   conductFullLogin = (theIdentity) => {
-    //THIS SHOULD CALL IDINFO, NAMES, AND ALIASES
+    //THIS SHOULD CALL IDINFO, PROXY
     this.getIdentityInfo(theIdentity);
-    this.getNamefromIdentity(theIdentity);
-    // this.getAliasfromIdentity(theIdentity);
-  }; //Many LF, mostRecent and other functions have not been incorporated yet
+    this.getProxyDoc(theIdentity);
+  };
 
   // BELOW PLATFORM LOGIN - WALLET PART
   getWalletPlatformLogin = (theMnemonic) => {
@@ -709,23 +747,6 @@ class App extends React.Component {
 
     retrieveIdentityIds()
       .then((d) => {
-        //  console.log("Mnemonic identities:\n", d);
-        //if (d.length === 0) {
-        // NEED TO HANDLE IF RETURN IS EMPTY BUT I HAVE A KEY IN LF.
-        // SHOULD I JUST NOT RETURN IDENTITY? OR
-        // NEED ENTIRE NEW FUNCTION TO HANDLE CHANGING OF LF
-        //   this.setState({
-        //     isLoadingIdentity: false,
-        //     isLoadingWallet: false,
-
-        //     //These are not called so end loading
-        //     isLoadingIdInfo: false,
-        //     isLoadingName: false,
-
-        //     identity: "no identity",
-        //     uniqueName: "", //Kicks out of platform login if identity is disabled but LF still retains.
-        //   });
-        // }
         if (this.state.identity === d[0]) {
           //SHOULD IT NOT EVEN WORRY ABOUT THE IDENTITY?
           this.setState(
@@ -745,7 +766,7 @@ class App extends React.Component {
   };
 
   getIdentityInfo = (theIdentity) => {
-    console.log("Called get identity info");
+    //console.log("Called get identity info");
 
     const client = new Dash.Client(dapiClientNoWallet(this.state.whichNetwork));
 
@@ -781,109 +802,173 @@ class App extends React.Component {
       .finally(() => client.disconnect());
   };
 
-  handleName = (nameToAdd) => {
-    //From Name Purchase
+  // ProxyDoc: '',
+  // ProxyController: {
+  //   proxyList: [],
+  // },
+  // ProxyNameDoc: "",
+
+  handleProxy = (proxyToAdd) => {
+    // REPLACE ALL handleName ->
+    //From ProxyDoc Register
+    //this.loadIdentityCredits() // ADD THIS TO UPDATE THE CREDIT AMOUNT AFTER THE PROXY DOC CREATE. ->
     this.setState(
       {
-        uniqueName: nameToAdd,
-        isLoadingName: false,
+        ProxyDoc: proxyToAdd,
+        isLoadingProxy: false,
       },
       () => this.LOGINCOMPLETEQueryTrigger(this.state.identity)
     );
-    //
-    //
-    //ADDS IDENTITY/NAME TO LF AFTER PURCHASE OF NAME
-    //  //******************** */
-    let DashMoneyLF = LocalForage.createInstance({
-      name: "dashmoney-platform-login",
-    });
-    let lfObject = {
-      identity: this.state.identity,
-      name: nameToAdd,
-    };
-
-    DashMoneyLF.setItem(this.state.walletId, lfObject)
-      .then((d) => {
-        //return DashMoneyLF.getItem(walletId);
-        console.log("Return from LF setitem:", d);
-      })
-      .catch((err) => {
-        console.error("Something went wrong setting to DashMoneyLF:\n", err);
-      });
-    // //******************** */
   };
 
-  getNamefromIdentity = (theIdentity) => {
+  //THIS IS FOR GETTING THE PROXYDOC TO STATE AND START QUERY RACE
+
+  getProxyDoc = (theIdentity) => {
+    const client = new Dash.Client(dapiClientNoWallet(this.state.whichNetwork));
+
+    const getDocuments = async () => {
+      console.log("Called Query ProxyDoc");
+
+      return client.platform.documents.get("ProxyContract.proxy", {
+        where: [["$ownerId", "==", theIdentity]],
+      });
+    };
+
+    getDocuments()
+      .then((d) => {
+        if (d.length === 0) {
+          console.log("There are no ProxyDoc.");
+          this.setState({
+            isLoadingProxy: false,
+          });
+        } else {
+          let proxyRetrieved = d[0].toJSON();
+
+          proxyRetrieved.controlId = Identifier.from(
+            proxyRetrieved.controlId,
+            "base64"
+          ).toJSON();
+
+          console.log("Proxy retrieved:\n", proxyRetrieved);
+          this.setState(
+            {
+              ProxyDoc: proxyRetrieved,
+              //isLoadingProxy: false,
+            },
+            () => this.startProxyRace()
+          );
+        }
+      })
+      .catch((e) => {
+        console.error("Something went wrong:\n", e);
+      })
+      .finally(() => client.disconnect());
+  };
+
+  //WRITE SO CAN REUSE, FOR NAME WALLET WHEN CONNECTING PROXY
+  startProxyRace = () => {
+    if (!this.state.isLoadingProxy) {
+      this.setState({ isLoadingProxy: true });
+    }
+
+    this.getProxyController(this.state.ProxyDoc);
+    this.getProxyNameDoc(this.state.ProxyDoc);
+  };
+
+  customerProxyRace = () => {
+    if (this.state.CustomerProxy1 && this.state.CustomerProxy2) {
+      this.setState({
+        CustomerProxy1: false,
+        CustomerProxy2: false,
+        isLoadingProxy: false,
+      });
+    }
+  };
+
+  getProxyController = (proxyDoc) => {
+    const client = new Dash.Client(dapiClientNoWallet(this.state.whichNetwork));
+
+    const getDocuments = async () => {
+      // console.log("Called Query ProxyController");
+
+      return client.platform.documents.get("ProxyContract.controller", {
+        where: [["$ownerId", "==", proxyDoc.controlId]],
+      });
+    };
+
+    getDocuments()
+      .then((d) => {
+        if (d.length === 0) {
+          // console.log("There are no ProxyController.");
+          this.setState(
+            {
+              CustomerProxy1: true,
+            },
+            () => this.customerProxyRace()
+          );
+        } else {
+          let proxyControllerRetrieved = d[0].toJSON();
+
+          proxyControllerRetrieved.proxyList = JSON.parse(
+            proxyControllerRetrieved.proxyList
+          );
+
+          // console.log("Controller retrieved:\n", proxyControllerRetrieved);
+          this.setState(
+            {
+              ProxyController: proxyControllerRetrieved,
+              CustomerProxy1: true,
+            },
+            () => this.customerProxyRace()
+          );
+        }
+      })
+      .catch((e) => {
+        console.error("Something went wrong:\n", e);
+      })
+      .finally(() => client.disconnect());
+  };
+
+  getProxyNameDoc = (proxyDoc) => {
     const client = new Dash.Client(dapiClientNoWallet(this.state.whichNetwork));
 
     const retrieveNameByRecord = async () => {
       // Retrieve by a name's identity ID
       return client.platform.names.resolveByRecord(
         "identity",
-        theIdentity // Your identity ID
+        proxyDoc.controlId
       );
     };
 
     retrieveNameByRecord()
       .then((d) => {
         if (d.length === 0) {
-          console.log("There are no Names.");
-          this.setState({
-            //Should catch the new name and aliases and stop spinner
-            isLoadingName: false,
-            uniqueName: "no name",
-          });
-        } else {
-          let nameRetrieved = d[0].toJSON();
-          //
-          //  //******************** */
-          //ADDS IDENTITY/NAME TO LF AFTER NORMAL LOGIN IF WALLETID IS NOT IN LF
-          if (!this.state.platformLogin) {
-            let DashMoneyLF = LocalForage.createInstance({
-              name: "dashmoney-platform-login",
-            });
-            let lfObject = {
-              identity: theIdentity,
-              name: nameRetrieved.label,
-            };
-
-            DashMoneyLF.setItem(this.state.walletId, lfObject)
-              .then((d) => {
-                //return DashMoneyLF.getItem(walletId);
-                //   console.log("Return from LF setitem:", d);
-              })
-              .catch((err) => {
-                console.error(
-                  "Something went wrong setting to DashMoneyLF:\n",
-                  err
-                );
-              });
-          }
-          //******************** */
-          console.log("Name retrieved:\n", nameRetrieved);
+          console.log("There are no ProxyNameDoc.");
           this.setState(
             {
-              uniqueName: nameRetrieved.label,
-              isLoadingName: false,
+              CustomerProxy2: true,
             },
-            () => this.LOGINCOMPLETEQueryTrigger(theIdentity)
+            () => this.customerProxyRace()
+          );
+        } else {
+          let proxyNameDocRetrieved = d[0].toJSON();
+
+          //console.log("Name retrieved:\n", proxyNameDocRetrieved);
+          this.setState(
+            {
+              ProxyNameDoc: proxyNameDocRetrieved,
+              CustomerProxy2: true,
+            },
+            () => this.customerProxyRace()
           );
         }
       })
       .catch((e) => {
-        this.setState({
-          isLoadingName: false,
-          nameError: true,
-        });
-        console.error("Something went wrong getting names:\n", e);
-        // this.getAliasfromIdentity(theIdentity);
+        console.error("Something went wrong:\n", e);
       })
       .finally(() => client.disconnect());
   };
-  //
-  //FROM HANDLENAME() AND  getNamefromIdentity() AND getWalletPlatformLogin()
-  // SO  NEW ACCOUNT  AND  NEW LOGIN             AND LOCALFORAGE
-  //
+
   LOGINCOMPLETEQueryTrigger = (theIdentity) => {
     if (theIdentity === this.state.MerchantId) {
       this.startMerchantRace();
@@ -929,6 +1014,29 @@ class App extends React.Component {
           isLoadingIdInfo: false,
           accountBalance: this.state.accountBalance - 1000000,
         });
+        //
+        //   //
+        //   //ADDS IDENTITY TO LF AFTER Register of Identity
+        //   //  //******************** */
+        let DashMoneyLF = LocalForage.createInstance({
+          name: "dashmoney-platform-login",
+        });
+        let lfObject = {
+          identity: this.state.identity,
+        };
+
+        DashMoneyLF.setItem(this.state.walletId, lfObject)
+          .then((d) => {
+            //return DashMoneyLF.getItem(walletId);
+            console.log("Return from LF setitem:", d);
+          })
+          .catch((err) => {
+            console.error(
+              "Something went wrong setting to DashMoneyLF:\n",
+              err
+            );
+          });
+        //   // //******************** */
       })
       .catch((e) => {
         console.error("Something went wrong:\n", e);
@@ -983,11 +1091,9 @@ class App extends React.Component {
       })
       .finally(() => client.disconnect());
   };
-  //Name and Alias purchase is done in the modal.
 
-  //ACCOUNT LOGIN FUNCTIONS^^^
-
-  /*
+  /*ACCOUNT LOGIN FUNCTIONS^^^
+   *
    *   ################
    *   ###          ####
    *   ################
@@ -3494,19 +3600,46 @@ class App extends React.Component {
       ? (document.body.style.color = "black")
       : (document.body.style.color = "white");
 
-    let isLoginComplete =
-      //CHANGE TO IDENTITY -> NO, stay with names
-      //this.state.identityInfo !== "" && this.state.identity !== "no identity";
-      this.state.uniqueName !== "" && this.state.uniqueName !== "no name";
+    let isLoginComplete = false;
 
     let loggedInAs = "customer"; // 'merchant'
+    let ProxyTuple = undefined;
+    let uniqueName = "No Proxy";
 
-    if (
-      import.meta.env.VITE_MERCHANT_IDENTITY === this.state.identity &&
-      isLoginComplete
-    ) {
-      // if (true) {
-      loggedInAs = "merchant";
+    if (import.meta.env.VITE_MERCHANT_IDENTITY === this.state.identity) {
+      if (this.state.MerchantNameDoc.label !== "no name") {
+        isLoginComplete = true;
+        loggedInAs = "merchant";
+        uniqueName = this.state.MerchantNameDoc.label;
+      }
+    } else {
+      // ProxyDoc: '',
+      // ProxyController: {
+      //   proxyList: [],
+      // },
+      // ProxyNameDoc: "",
+      ProxyTuple = this.state.ProxyController.proxyList.find((proxyTuple) => {
+        return proxyTuple[0] === this.state.identity;
+        //this.state.ProxyDoc.$id;
+      });
+
+      let isProxyApproved = false;
+      //ProxyApproved could be a tuple or undefined
+      if (ProxyTuple !== undefined) {
+        isProxyApproved = true;
+      }
+
+      let ProxyVerified =
+        this.state.ProxyDoc !== "" &&
+        this.state.ProxyNameDoc !== "" &&
+        isProxyApproved;
+
+      if (
+        ProxyVerified // && this.state.MerchantNameDoc.label !== "no name"
+      ) {
+        isLoginComplete = true;
+        uniqueName = `${this.state.ProxyNameDoc.label}*`;
+      }
     }
 
     return (
@@ -3522,7 +3655,7 @@ class App extends React.Component {
           expandedTopNav={this.state.expandedTopNav}
           selectedDapp={this.state.selectedDapp}
           handleSelectedDapp={this.handleSelectedDapp}
-          uniqueName={this.state.uniqueName}
+          uniqueName={uniqueName}
           identity={this.state.identity}
           identityInfo={this.state.identityInfo}
         />
@@ -3555,6 +3688,11 @@ class App extends React.Component {
                     <>
                       <AccountLogin
                         isLoginComplete={isLoginComplete}
+                        loggedInAs={loggedInAs}
+                        MerchantNameDoc={this.state.MerchantNameDoc}
+                        ProxyDoc={this.state.ProxyDoc}
+                        ProxyTuple={ProxyTuple}
+                        ProxyNameDoc={this.state.ProxyNameDoc}
                         whichNetwork={this.state.whichNetwork}
                         mnemonic={this.state.mnemonic}
                         handleAccountRetry={this.handleAccountRetry}
@@ -3563,12 +3701,13 @@ class App extends React.Component {
                         handleSelectedDapp={this.handleSelectedDapp}
                         isLoadingIdentity={this.state.isLoadingIdentity}
                         isLoadingIdInfo={this.state.isLoadingIdInfo}
-                        isLoadingName={this.state.isLoadingName}
+                        isLoadingProxy={this.state.isLoadingProxy}
+                        startProxyRace={this.startProxyRace}
                         isLoadingWallet={this.state.isLoadingWallet}
                         identity={this.state.identity}
                         identityRaw={this.state.identityRaw}
                         identityInfo={this.state.identityInfo}
-                        uniqueName={this.state.uniqueName}
+                        uniqueName={uniqueName}
                         accountBalance={this.state.accountBalance}
                         mode={this.state.mode}
                       />
@@ -3589,7 +3728,7 @@ class App extends React.Component {
                         isLoadingRentals={this.state.isLoadingRentals}
                         identity={this.state.identity}
                         identityInfo={this.state.identityInfo}
-                        uniqueName={this.state.uniqueName}
+                        uniqueName={uniqueName}
                         mode={this.state.mode}
                         handleSelectedDapp={this.handleSelectedDapp}
                         handleSelectedRental={this.handleSelectedRental}
@@ -3639,7 +3778,7 @@ class App extends React.Component {
                         // InitialPullMerchant={this.state.InitialPullMerchant}
                         identity={this.state.identity}
                         identityInfo={this.state.identityInfo}
-                        uniqueName={this.state.uniqueName}
+                        uniqueName={uniqueName}
                         MerchantNameDoc={this.state.MerchantNameDoc}
                         DisplayRequests={this.state.DisplayRequests}
                         //
@@ -3660,7 +3799,7 @@ class App extends React.Component {
                         isLoadingRentals={this.state.isLoadingRentals}
                         identity={this.state.identity}
                         identityInfo={this.state.identityInfo}
-                        uniqueName={this.state.uniqueName}
+                        uniqueName={uniqueName}
                         mode={this.state.mode}
                         accountBalance={this.state.accountBalance}
                         isLoadingWallet={this.state.isLoadingWallet}
@@ -3681,7 +3820,7 @@ class App extends React.Component {
                         isLoadingRentals={this.state.isLoadingRentals}
                         identity={this.state.identity}
                         identityInfo={this.state.identityInfo}
-                        uniqueName={this.state.uniqueName}
+                        uniqueName={uniqueName}
                         mode={this.state.mode}
                         //
                         handleEditRentalModal={this.handleEditRentalModal}
@@ -3710,7 +3849,7 @@ class App extends React.Component {
                         isLoadingRentals={this.state.isLoadingRentals}
                         identity={this.state.identity}
                         identityInfo={this.state.identityInfo}
-                        uniqueName={this.state.uniqueName}
+                        uniqueName={uniqueName}
                         mode={this.state.mode}
                         accountBalance={this.state.accountBalance}
                         isLoadingWallet={this.state.isLoadingWallet}
@@ -3740,7 +3879,7 @@ class App extends React.Component {
                         //handleSelectedDapp={this.handleSelectedDapp}
 
                         handleSelectedRental={this.handleSelectedRental}
-                        uniqueName={this.state.uniqueName}
+                        uniqueName={uniqueName}
                         mode={this.state.mode}
                         Rentals={this.state.Rentals}
                         showModal={this.showModal}
@@ -3759,7 +3898,7 @@ class App extends React.Component {
                         isLoadingRentals={this.state.isLoadingRentals}
                         identity={this.state.identity}
                         identityInfo={this.state.identityInfo}
-                        uniqueName={this.state.uniqueName}
+                        uniqueName={uniqueName}
                         mode={this.state.mode}
                         //
                         rental={this.state.SelectedRental}
@@ -3809,7 +3948,7 @@ class App extends React.Component {
                         identity={this.state.identity}
                         identityInfo={this.state.identityInfo}
                         MerchantNameDoc={this.state.MerchantNameDoc}
-                        uniqueName={this.state.uniqueName}
+                        uniqueName={uniqueName}
                         //
                         mode={this.state.mode}
                         showModal={this.showModal}
@@ -3906,11 +4045,11 @@ class App extends React.Component {
           <></>
         )}
         {this.state.isModalShowing &&
-        this.state.presentModal === "RegisterNameModal" ? (
-          <RegisterNameModal
-            triggerNameLoading={this.triggerNameLoading}
-            triggerNameNotLoading={this.triggerNameNotLoading}
-            handleName={this.handleName}
+        this.state.presentModal === "RegisterProxyModal" ? (
+          <RegisterProxyModal
+            triggerProxyLoading={this.triggerProxyLoading}
+            triggerProxyNotLoading={this.triggerProxyNotLoading}
+            handleProxy={this.handleProxy}
             isModalShowing={this.state.isModalShowing}
             hideModal={this.hideModal}
             mode={this.state.mode}
@@ -3978,7 +4117,7 @@ class App extends React.Component {
             SelectedRental={this.state.SelectedRental}
             selectedRequest={this.state.selectedRequest}
             MerchantNameDoc={this.state.MerchantNameDoc}
-            //uniqueName={this.state.uniqueName}
+            //uniqueName={uniqueName}
             deleteRequest={this.deleteRequest}
             isModalShowing={this.state.isModalShowing}
             hideModal={this.hideModal}
@@ -4027,7 +4166,7 @@ class App extends React.Component {
             //SelectedRental={this.state.SelectedRental}
             selectedConfirm={this.state.selectedConfirm}
             //MerchantNameDoc={this.state.MerchantNameDoc}
-            //uniqueName={this.state.uniqueName}
+            //uniqueName={uniqueName}
             deleteBlockConfirm={this.deleteBlockConfirm}
             isModalShowing={this.state.isModalShowing}
             hideModal={this.hideModal}

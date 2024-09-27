@@ -71,6 +71,7 @@ class ImgsComponent extends React.Component {
 
   submitAndResetForm = () => {
     this.props.addFieldOfImg(this.state.stringURLInput);
+    //document.getElementById("formImgReset").reset();
     this.setState({
       stringURLInput: "",
       validStringURL: false,
@@ -140,6 +141,7 @@ class ImgsComponent extends React.Component {
           style={{ paddingTop: ".2rem", marginBottom: ".3rem" }}
         ></div> */}
         {/* <Form
+        id="formImgReset"
           noValidate
           //onSubmit={this.handleSubmitClick}
           onChange={this.onChange}
