@@ -716,6 +716,7 @@ class App extends React.Component {
     //THIS SHOULD CALL IDINFO, PROXY
     this.getIdentityInfo(theIdentity);
     this.getProxyDoc(theIdentity);
+    this.LOGINCOMPLETEQueryTrigger(theIdentity);
   };
 
   // BELOW PLATFORM LOGIN - WALLET PART
