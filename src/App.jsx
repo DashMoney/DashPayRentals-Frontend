@@ -635,12 +635,15 @@ class App extends React.Component {
       )
     );
 
+    let theWalletId;
+
     const retrieveIdentityIds = async () => {
       const account = await client.getWalletAccount();
 
       //console.log(account.getTotalBalance());
       // console.log(account.getUnusedAddress().address);
       //console.log(account.getTransactionHistory());
+      theWalletId = account.walletId;
 
       this.setState({
         accountBalance: account.getTotalBalance(),
@@ -687,7 +690,7 @@ class App extends React.Component {
             identity: d[0],
           };
 
-          DashMoneyLF.setItem(this.state.walletId, lfObject)
+          DashMoneyLF.setItem(theWalletId, lfObject)
             .then((d) => {
               //return DashMoneyLF.getItem(walletId);
               console.log("Return from LF setitem:", d);
@@ -1007,15 +1010,18 @@ class App extends React.Component {
       .then((d) => {
         console.log("Registered Identity:\n", d.toJSON());
         let idInfo = d.toJSON();
-        this.setState({
-          identity: idInfo.id,
-          identityInfo: idInfo,
-          identityRaw: d,
-          uniqueName: "no name", //This sets up the next step
-          isLoadingIdentity: false,
-          isLoadingIdInfo: false,
-          accountBalance: this.state.accountBalance - 1000000,
-        });
+        this.setState(
+          {
+            identity: idInfo.id,
+            identityInfo: idInfo,
+            identityRaw: d,
+            //uniqueName: "no name", //This sets up the next step
+            isLoadingIdentity: false,
+            isLoadingIdInfo: false,
+            // accountBalance: this.state.accountBalance - 1000000,
+          },
+          () => this.getWalletAfterIdentityRegister()
+        );
         //
         //   //
         //   //ADDS IDENTITY TO LF AFTER Register of Identity
@@ -1024,7 +1030,7 @@ class App extends React.Component {
           name: "dashmoney-platform-login",
         });
         let lfObject = {
-          identity: this.state.identity,
+          identity: idInfo.id,
         };
 
         DashMoneyLF.setItem(this.state.walletId, lfObject)
@@ -1047,6 +1053,49 @@ class App extends React.Component {
           isLoadingIdentity: false,
           isLoadingIdInfo: false,
           identityError: true,
+        });
+      })
+      .finally(() => client.disconnect());
+  };
+
+  getWalletAfterIdentityRegister = () => {
+    this.setState({
+      isLoadingWallet: true,
+    });
+
+    const client = new Dash.Client(
+      dapiClient(
+        this.state.whichNetwork,
+        this.state.mnemonic,
+        this.state.skipSynchronizationBeforeHeight
+      )
+    );
+
+    const retrieveWallet = async () => {
+      const account = await client.getWalletAccount();
+
+      this.setState({
+        accountBalance: account.getTotalBalance(),
+        accountHistory: account.getTransactionHistory(),
+      });
+
+      return true;
+    };
+
+    retrieveWallet()
+      .then((d) => {
+        console.log("Wallet Reloaded:\n", d);
+        this.setState({
+          isLoadingWallet: false,
+        });
+      })
+      .catch((e) => {
+        console.error(
+          "Something went wrong reloading WalletAfterIdentityRegister:\n",
+          e
+        );
+        this.setState({
+          isLoadingWallet: false,
         });
       })
       .finally(() => client.disconnect());
