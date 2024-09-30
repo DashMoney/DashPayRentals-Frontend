@@ -99,6 +99,12 @@ class Request extends React.Component {
     requestName = this.props.RentalRequestsNames.find((reqName) => {
       return reqName.$ownerId === this.props.request.$ownerId;
     });
+    if (requestName === undefined) {
+      requestName = {
+        label: "No Name Avail",
+        $ownerId: this.props.request.$ownerId,
+      };
+    }
     //}
 
     let rentalReplies = [];
