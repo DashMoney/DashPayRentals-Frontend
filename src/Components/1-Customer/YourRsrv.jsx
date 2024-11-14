@@ -95,48 +95,41 @@ class YourRsrv extends React.Component {
       });
     }
 
-    let rentalReplyMessages = [];
+    // let rentalReplyMessages = [];
 
-    if (confirm !== undefined && rentalReplies.length !== 0) {
-      rentalReplyMessages = rentalReplies.map((msg, index) => {
-        return (
-          // <Card
-          //   id="comment"
-          //   key={index}
-          //   index={index}
-          //   bg={cardBkg}
-          //   text={cardText}
-          // >
-          //   <Card.Body>
-          <div index={index} key={index}>
-            <div
-              className="ThreadBorder"
-              style={{ paddingTop: ".2rem", marginBottom: ".3rem" }}
-            ></div>
-            <Card.Title className="cardTitle">
-              {msg.$ownerId === this.props.identity ? (
-                <b style={{ color: "#008de4" }}>{this.props.uniqueName}</b>
-              ) : (
-                <b style={{ color: "#008de4" }}>
-                  {this.props.MerchantNameDoc.label}
-                </b>
-              )}
+    // if (confirm !== undefined && rentalReplies.length !== 0) {
+    //   rentalReplyMessages = rentalReplies.map((msg, index) => {
+    //     return (
+          
+    //       <div index={index} key={index}>
+    //         <div
+    //           className="ThreadBorder"
+    //           style={{ paddingTop: ".2rem", marginBottom: ".3rem" }}
+    //         ></div>
+    //         <Card.Title className="cardTitle">
+    //           {msg.$ownerId === this.props.identity ? (
+    //             <b style={{ color: "#008de4" }}>{this.props.uniqueName}</b>
+    //           ) : (
+    //             <b style={{ color: "#008de4" }}>
+    //               {this.props.MerchantNameDoc.label}
+    //             </b>
+    //           )}
 
-              <span className="textsmaller">
-                {formatDate(
-                  msg.$createdAt,
-                  this.props.today,
-                  this.props.yesterday
-                )}
-              </span>
-            </Card.Title>
-            <Card.Text>{msg.msg}</Card.Text>
-          </div>
-          //    </Card.Body>
-          // </Card>
-        );
-      });
-    }
+    //           <span className="textsmaller">
+    //             {formatDate(
+    //               msg.$createdAt,
+    //               this.props.today,
+    //               this.props.yesterday
+    //             )}
+    //           </span>
+    //         </Card.Title>
+    //         <Card.Text>{msg.msg}</Card.Text>
+    //       </div>
+    //       //    </Card.Body>
+    //       // </Card>
+    //     );
+    //   });
+    //}
 
     return (
       <>
@@ -384,7 +377,7 @@ class YourRsrv extends React.Component {
               <></>
             )} */}
 
-            {confirm === undefined && rentalReplies.length === 0 ? (
+            {/* {confirm === undefined && rentalReplies.length === 0 ? (
               <>
                 <p style={{ textAlign: "center", paddingTop: ".5rem" }}>
                   (Currently, there are no messages for this rental
@@ -393,9 +386,9 @@ class YourRsrv extends React.Component {
               </>
             ) : (
               <></>
-            )}
+            )} */}
 
-            {rentalReplyMessages}
+            {/* {rentalReplyMessages}
             <p></p>
             {confirm !== undefined ? (
               <>
@@ -412,7 +405,7 @@ class YourRsrv extends React.Component {
               </>
             ) : (
               <></>
-            )}
+            )} */}
           </Card.Body>
         </Card>
       </>

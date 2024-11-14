@@ -82,6 +82,8 @@ class Requests extends React.Component {
               Rentals={this.props.Rentals}
               // RentalRequests={this.props.RentalRequests}
               RentalConfirms={rsrvConfirms}
+              RentalRequestsProxies={this.props.RentalRequestsProxies}
+              RentalRequestsControllers={this.props.RentalRequestsControllers}
               RentalRequestsNames={this.props.RentalRequestsNames}
               RentalReplies={this.props.RentalReplies}
             />

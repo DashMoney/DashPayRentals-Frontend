@@ -111,6 +111,9 @@ class YourRental extends React.Component {
           index={this.props.index}
           bg={cardBkg}
           text={cardText}
+          style={{
+            marginBottom: ".5rem",
+          }}
         >
           <Card.Body>
             <Card.Title className="cardTitle">

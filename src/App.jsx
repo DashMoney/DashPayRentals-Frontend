@@ -75,6 +75,8 @@ class App extends React.Component {
       //isLoadingCreditTransfer: false,
       //isLoadingName: true,
       isLoadingProxy: true,
+      isLoadingControllers: true,
+
       isLoadingMerchantName: true,
 
       isLoadingWallet: true, //For wallet for topup
@@ -114,6 +116,9 @@ class App extends React.Component {
 
       CustomerProxy1: false,
       CustomerProxy2: false,
+
+      Controller1: false,
+      Controller2: false,
 
       accountBalance: "",
       accountHistory: "",
@@ -231,6 +236,10 @@ class App extends React.Component {
         //   $updatedAt: Date.now() - 500000,
         // },
       ], //This can be queried on signin
+
+      RentalRequestsProxies: [],
+
+      RentalRequestsControllers: [],
 
       RentalRequestsNames: [], //This is only used by Merchant
 
@@ -1716,12 +1725,14 @@ class App extends React.Component {
             //  console.log("newRequest:\n", returnedDoc);
             docArray = [...docArray, returnedDoc];
           }
-          this.getRequestsNames(docArray);
+
+          this.startControllerRace(docArray);
+          //this.getRequestsNames(docArray);
+
           // this.setState(
           //   {
           //     Merchant1: true,
           //     RentalRequests: docArray,
-
           //   },
           //   () => this.merchantRace()
           // );
@@ -1731,23 +1742,181 @@ class App extends React.Component {
       .finally(() => client.disconnect());
   };
 
-  getRequestsNames = (docArray) => {
+  //*** *** *** Proxy ControllerCheck and Names *** *** ***
+
+  startControllerRace = (docArray) => {
+    if (!this.state.isLoadingControllers) {
+      this.setState({ isLoadingControllers: true });
+    }
+
+    this.getRequestsProxies(docArray);
+  };
+
+  controllerRace = () => {
+    if (this.state.Controller1 && this.state.Controller2) {
+      this.setState(
+        {
+          Controller1: false,
+          Controller2: false,
+          Merchant1: true,
+          isLoadingControllers: false,
+        },
+        () => this.merchantRace()
+      );
+    }
+  };
+
+  getRequestsProxies = (theDocArray) => {
+    const client = new Dash.Client(dapiClientNoWallet(this.state.whichNetwork));
+
+    const getDocuments = async () => {
+      //console.log("Called Query RequestsProxies");
+
+      let ownerarrayOfOwnerIds = theDocArray.map((doc) => {
+        return doc.$ownerId;
+      });
+
+      let setOfOwnerIds = [...new Set(ownerarrayOfOwnerIds)];
+
+      let arrayOfOwnerIds = [...setOfOwnerIds];
+
+      return client.platform.documents.get("ProxyContract.proxy", {
+        where: [["$ownerId", "in", arrayOfOwnerIds]],
+        orderBy: [["$ownerId", "asc"]],
+      });
+    };
+
+    getDocuments()
+      .then((d) => {
+        let proxyDocArray = [];
+
+        if (d.length === 0) {
+          console.log("There are no ProxyDocs.");
+          this.setState(
+            {
+              Controller1: true,
+              Controller2: true,
+              RentalRequests: theDocArray,
+              RentalRequestsProxies: proxyDocArray,
+              RentalRequestsNames: [],
+              RentalRequestsControllers: [],
+            },
+            () => this.controllerRace()
+          );
+        } else {
+          for (const n of d) {
+            let proxyDoc = n.toJSON();
+            //console.log("proxyDoc:\n", n.toJSON());
+            proxyDoc.controlId = Identifier.from(
+              proxyDoc.controlId,
+              "base64"
+            ).toJSON();
+
+            proxyDocArray = [proxyDoc, ...proxyDocArray];
+          }
+
+          //console.log(`Proxy Docs: ${proxyDocArray}`);
+
+          this.getProxyControllers(theDocArray, proxyDocArray);
+          this.getControllerNames(theDocArray, proxyDocArray);
+        }
+      })
+      .catch((e) => {
+        console.error("Something went wrong:\n", e);
+      })
+      .finally(() => client.disconnect());
+  };
+
+  getProxyControllers = (theDocArray, proxyDocs) => {
+    const client = new Dash.Client(dapiClientNoWallet(this.state.whichNetwork));
+
+    const getDocuments = async () => {
+      let ownerarrayOfControlIds = proxyDocs.map((doc) => {
+        return doc.controlId;
+      });
+
+      let setOfControlIds = [...new Set(ownerarrayOfControlIds)];
+
+      let arrayOfControlIds = [...setOfControlIds];
+
+      return client.platform.documents.get("ProxyContract.controller", {
+        where: [["$ownerId", "in", arrayOfControlIds]],
+        orderBy: [["$ownerId", "asc"]],
+      });
+
+      // console.log("Called Query ProxyController");
+
+      // return client.platform.documents.get("ProxyContract.controller", {
+      //   where: [["$ownerId", "==", proxyDoc.controlId]],
+      // });
+    };
+
+    getDocuments()
+      .then((d) => {
+        if (d.length === 0) {
+          // console.log("There are no ProxyController.");
+
+          this.setState(
+            {
+              Controller1: true,
+              RentalRequests: theDocArray,
+              RentalRequestsProxies: proxyDocs,
+              RentalRequestsNames: [],
+              RentalRequestsControllers: [],
+            },
+            () => this.controllerRace()
+          );
+        } else {
+          let proxyDocArray = [];
+          for (const n of d) {
+            let proxyDoc = n.toJSON();
+            //console.log("proxyDoc:\n", n.toJSON());
+
+            // proxyDoc.controlId = Identifier.from(
+            //   proxyDoc.controlId,
+            //   "base64"
+            // ).toJSON();
+
+            proxyDoc.proxyList = JSON.parse(proxyDoc.proxyList);
+
+            proxyDocArray = [proxyDoc, ...proxyDocArray];
+          }
+
+          this.setState(
+            {
+              Controller1: true,
+              RentalRequests: theDocArray,
+              RentalRequestsProxies: proxyDocs,
+              RentalRequestsNames: [],
+              RentalRequestsControllers: proxyDocArray,
+            },
+            () => this.controllerRace()
+          );
+        }
+      })
+      .catch((e) => {
+        console.error("Something went wrong:\n", e);
+      })
+      .finally(() => client.disconnect());
+  };
+
+  getControllerNames = (theDocArray, proxyDocs) => {
     const client = new Dash.Client(dapiClientNoWallet(this.state.whichNetwork));
     //START OF NAME RETRIEVAL
 
-    let ownerarrayOfOwnerIds = docArray.map((doc) => {
-      return doc.$ownerId;
+    let ownerarrayOfControlIds = proxyDocs.map((doc) => {
+      return doc.controlId;
     });
 
-    let setOfOwnerIds = [...new Set(ownerarrayOfOwnerIds)];
+    let setOfControlIds = [...new Set(ownerarrayOfControlIds)];
 
-    let arrayOfOwnerIds = [...setOfOwnerIds];
+    let arrayOfControlIds = [...setOfControlIds];
 
-    //console.log("Calling getNamesforDrives");
+    //console.log("Calling getNamesforControllers");
 
     const getNameDocuments = async () => {
       return client.platform.documents.get("DPNSContract.domain", {
-        where: [["records.identity", "in", arrayOfOwnerIds]],
+        where: [["records.identity", "in", arrayOfControlIds]],
         orderBy: [["records.identity", "asc"]],
       });
     };
@@ -1767,19 +1936,71 @@ class App extends React.Component {
         //console.log(`DPNS Name Docs: ${nameDocArray}`);
         this.setState(
           {
-            Merchant1: true,
-            RentalRequests: docArray,
+            Controller2: true,
+            // RentalRequests: theDocArray,
+            // RentalRequestsProxies: proxyDocs,
             RentalRequestsNames: nameDocArray,
           },
-          () => this.merchantRace()
+          () => this.controllerRace()
         );
       })
       .catch((e) => {
-        console.error("Something went wrong getting Requests Names:\n", e);
+        console.error("Something went wrong:\n", e);
       })
       .finally(() => client.disconnect());
-    //END OF NAME RETRIEVAL
   };
+
+  //^^^ ^^^ ^^^ Proxy ControllerCheck and Names *** *** ***
+
+  // getRequestsNames = (docArray) => {
+  //   const client = new Dash.Client(dapiClientNoWallet(this.state.whichNetwork));
+  //   //START OF NAME RETRIEVAL
+
+  //   let ownerarrayOfOwnerIds = docArray.map((doc) => {
+  //     return doc.$ownerId;
+  //   });
+
+  //   let setOfOwnerIds = [...new Set(ownerarrayOfOwnerIds)];
+
+  //   let arrayOfOwnerIds = [...setOfOwnerIds];
+
+  //   //console.log("Calling getNamesforDrives");
+
+  //   const getNameDocuments = async () => {
+  //     return client.platform.documents.get("DPNSContract.domain", {
+  //       where: [["records.identity", "in", arrayOfOwnerIds]],
+  //       orderBy: [["records.identity", "asc"]],
+  //     });
+  //   };
+
+  //   getNameDocuments()
+  //     .then((d) => {
+  //       //WHAT IF THERE ARE NO NAMES? -> THEN THIS WON'T BE CALLED
+  //       // if (d.length === 0) {
+  //       //console.log("No DPNS domain documents retrieved.");
+  //       // }
+  //       let nameDocArray = [];
+
+  //       for (const n of d) {
+  //         //console.log("NameDoc:\n", n.toJSON());
+  //         nameDocArray = [n.toJSON(), ...nameDocArray];
+  //       }
+  //       //console.log(`DPNS Name Docs: ${nameDocArray}`);
+  //       this.setState(
+  //         {
+  //           Merchant1: true,
+  //           RentalRequests: docArray,
+  //           RentalRequestsNames: nameDocArray,
+  //         },
+  //         () => this.merchantRace()
+  //       );
+  //     })
+  //     .catch((e) => {
+  //       console.error("Something went wrong getting Requests Names:\n", e);
+  //     })
+  //     .finally(() => client.disconnect());
+  //   //END OF NAME RETRIEVAL
+  // };
 
   getConfirms = () => {
     const client = new Dash.Client(dapiClientNoWallet(this.state.whichNetwork));
@@ -1835,8 +2056,15 @@ class App extends React.Component {
             // console.log("newConfirm:\n", returnedDoc);
             docArray = [...docArray, returnedDoc];
           }
-
-          this.getConfirmReplies(docArray);
+          this.setState(
+            {
+              RentalConfirms: docArray,
+              RentalReplies: [],
+              Merchant2: true,
+            },
+            () => this.merchantRace()
+          );
+          // this.getConfirmReplies(docArray);
         }
       })
       .catch((e) => {
@@ -1845,80 +2073,80 @@ class App extends React.Component {
       .finally(() => client.disconnect());
   };
 
-  getConfirmReplies = (theConfirms) => {
-    const client = new Dash.Client(dapiClientNoWallet(this.state.whichNetwork));
+  // getConfirmReplies = (theConfirms) => {
+  //   const client = new Dash.Client(dapiClientNoWallet(this.state.whichNetwork));
 
-    // This Below is to get unique set of Confirm doc ids
-    let arrayOfConfirmIds = theConfirms.map((doc) => {
-      return doc.$id;
-    });
+  //   // This Below is to get unique set of Confirm doc ids
+  //   let arrayOfConfirmIds = theConfirms.map((doc) => {
+  //     return doc.$id;
+  //   });
 
-    //console.log("Array of Confirm Req ids", arrayOfConfirmIds);
+  //   //console.log("Array of Confirm Req ids", arrayOfConfirmIds);
 
-    let setOfConfirmIds = [...new Set(arrayOfConfirmIds)];
+  //   let setOfConfirmIds = [...new Set(arrayOfConfirmIds)];
 
-    arrayOfConfirmIds = [...setOfConfirmIds];
+  //   arrayOfConfirmIds = [...setOfConfirmIds];
 
-    //console.log("Array of Confirm ids", arrayOfConfirmIds);
+  //   //console.log("Array of Confirm ids", arrayOfConfirmIds);
 
-    const getDocuments = async () => {
-      //console.log("Called Get Merchant Replies");
+  //   const getDocuments = async () => {
+  //     //console.log("Called Get Merchant Replies");
 
-      return client.platform.documents.get("RENTALSContract.reply", {
-        where: [
-          ["confirmId", "in", arrayOfConfirmIds],
-          ["$createdAt", "<=", Date.now()],
-        ],
-        orderBy: [
-          ["confirmId", "asc"],
-          ["$createdAt", "desc"],
-        ],
-      });
-    };
+  //     return client.platform.documents.get("RENTALSContract.reply", {
+  //       where: [
+  //         ["confirmId", "in", arrayOfConfirmIds],
+  //         ["$createdAt", "<=", Date.now()],
+  //       ],
+  //       orderBy: [
+  //         ["confirmId", "asc"],
+  //         ["$createdAt", "desc"],
+  //       ],
+  //     });
+  //   };
 
-    getDocuments()
-      .then((d) => {
-        //console.log("Getting Confirm replies");
-        if (d.length === 0) {
-          //console.log("There are no ConfirmReplies");
+  //   getDocuments()
+  //     .then((d) => {
+  //       //console.log("Getting Confirm replies");
+  //       if (d.length === 0) {
+  //         //console.log("There are no ConfirmReplies");
 
-          this.setState(
-            {
-              RentalConfirms: theConfirms,
-              RentalReplies: [],
-              Merchant2: true,
-            },
-            () => this.merchantRace()
-          );
-        } else {
-          let docArray = [];
+  //         this.setState(
+  //           {
+  //             RentalConfirms: theConfirms,
+  //             RentalReplies: [],
+  //             Merchant2: true,
+  //           },
+  //           () => this.merchantRace()
+  //         );
+  //       } else {
+  //         let docArray = [];
 
-          for (const n of d) {
-            let returnedDoc = n.toJSON();
-            //console.log("Reply:\n", returnedDoc);
-            returnedDoc.confirmId = Identifier.from(
-              returnedDoc.confirmId,
-              "base64"
-            ).toJSON();
-            //console.log("newReply:\n", returnedDoc);
-            docArray = [returnedDoc, ...docArray];
-          }
+  //         for (const n of d) {
+  //           let returnedDoc = n.toJSON();
+  //           //console.log("Reply:\n", returnedDoc);
+  //           returnedDoc.confirmId = Identifier.from(
+  //             returnedDoc.confirmId,
+  //             "base64"
+  //           ).toJSON();
+  //           //console.log("newReply:\n", returnedDoc);
+  //           docArray = [returnedDoc, ...docArray];
+  //         }
 
-          this.setState(
-            {
-              RentalConfirms: theConfirms,
-              RentalReplies: docArray,
-              Merchant2: true,
-            },
-            () => this.merchantRace()
-          );
-        }
-      })
-      .catch((e) => {
-        console.error("Something went wrong Merchant Replies:\n", e);
-      })
-      .finally(() => client.disconnect());
-  };
+  //         this.setState(
+  //           {
+  //             RentalConfirms: theConfirms,
+  //             RentalReplies: docArray,
+  //             Merchant2: true,
+  //           },
+  //           () => this.merchantRace()
+  //         );
+  //       }
+  //     })
+  //     .catch((e) => {
+  //       console.error("Something went wrong Merchant Replies:\n", e);
+  //     })
+  //     .finally(() => client.disconnect());
+  // };
 
   handleConfirmRequestModal = (theRequest) => {
     //HAVE TO DETERMINE THE RENTAL of request ->
@@ -3796,6 +4024,7 @@ class App extends React.Component {
                   ) : (
                     <></>
                   )}
+
                   {this.state.selectedDapp === "Requests" ? (
                     <>
                       <RequestsPage
@@ -3811,6 +4040,10 @@ class App extends React.Component {
                         RentalRequests={this.state.RentalRequests}
                         RentalConfirms={this.state.RentalConfirms}
                         RentalRequestsNames={this.state.RentalRequestsNames}
+                        RentalRequestsProxies={this.state.RentalRequestsProxies}
+                        RentalRequestsControllers={
+                          this.state.RentalRequestsControllers
+                        }
                         RentalReplies={this.state.RentalReplies}
                         handleSelectedRental={this.handleSelectedRental}
                         handleConfirmRequestModal={

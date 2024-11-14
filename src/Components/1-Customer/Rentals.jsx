@@ -12,7 +12,7 @@ class Rentals extends React.Component {
     let rentals = this.props.Rentals.map((rental, index) => {
       //console.log(post);
       return (
-        <div key={index} style={{ marginBottom: "0.1rem" }}>
+        <div key={index}>
           <Rental
             whichNetwork={this.props.whichNetwork}
             //key={index}

@@ -91,74 +91,112 @@ class Request extends React.Component {
     //this.props.RentalRequestsNames
     //this.props.RentalReplies
 
-    //
+    // this.props.RentalRequestsProxies
 
-    let requestName = "No Name";
-
-    //if (confirm !== undefined) {
-    requestName = this.props.RentalRequestsNames.find((reqName) => {
-      return reqName.$ownerId === this.props.request.$ownerId;
+    let requestProxy = this.props.RentalRequestsProxies.find((reqProxy) => {
+      return reqProxy.$ownerId === this.props.request.$ownerId;
     });
-    if (requestName === undefined) {
-      requestName = {
-        label: "No Name Avail",
-        $ownerId: this.props.request.$ownerId,
-      };
+
+    let requestName = {
+      label: "No Name Avail",
+      $ownerId: this.props.request.$ownerId,
+    };
+
+    let requestController;
+    let requestControllerTuple; //[IdentityId, Label]
+    //let isProxyApproved = false;
+
+    if (requestProxy !== undefined) {
+      requestController = this.props.RentalRequestsControllers.find(
+        (reqController) => {
+          return reqController.$ownerId === requestProxy.controlId;
+        }
+      );
+
+      if (requestController !== undefined) {
+        // if the proxyDoc is on the ControllerList -> need to check the list ->
+        // proxyList   //[IdentityId, Label]
+        requestControllerTuple = requestController.proxyList.find((tuple) => {
+          return requestProxy.$ownerId === tuple[0];
+        });
+
+        if (requestControllerTuple !== undefined) {
+          requestName = this.props.RentalRequestsNames.find((reqName) => {
+            return reqName.$ownerId === requestController.$ownerId;
+          });
+        }
+
+        if (requestName === undefined) {
+          requestName = {
+            label: "No Name Avail",
+            $ownerId: this.props.request.$ownerId,
+          };
+        }
+
+        // <div className="indentStuff">
+        //                         <h5 style={{ color: "#008de4" }}>
+        //                           <b>{this.props.ProxyNameDoc.label}*</b>
+        //                         </h5>
+        //                         <p style={{ marginLeft: "1rem" }}>
+        //                           {" "}
+        //                           {this.props.ProxyTuple[1]}
+        //                         </p>
+        //                       </div>
+      }
     }
-    //}
 
-    let rentalReplies = [];
+    // let rentalReplies = [];
 
-    if (
-      this.props.RentalReplies.length !== 0 &&
-      this.props.DisplayRequests === "Confirmed"
-    ) {
-      rentalReplies = this.props.RentalReplies.filter((msg) => {
-        return confirm.$id === msg.confirmId;
-      });
-    }
+    // if (
+    //   this.props.RentalReplies.length !== 0 &&
+    //   this.props.DisplayRequests === "Confirmed"
+    // ) {
+    //   rentalReplies = this.props.RentalReplies.filter((msg) => {
+    //     return confirm.$id === msg.confirmId;
+    //   });
+    // }
 
-    let rentalReplyMessages = [];
+    // let rentalReplyMessages = [];
 
-    if (confirm !== undefined && rentalReplies.length !== 0) {
-      rentalReplyMessages = rentalReplies.map((msg, index) => {
-        return (
-          // <Card
-          //   id="comment"
-          //   key={index}
-          //   index={index}
-          //   bg={cardBkg}
-          //   text={cardText}
-          // >
-          //   <Card.Body>
-          <div index={index} key={index}>
-            <div
-              className="ThreadBorder"
-              style={{ paddingTop: ".3rem", marginBottom: ".3rem" }}
-            ></div>
+    // if (confirm !== undefined && rentalReplies.length !== 0) {
+    //   rentalReplyMessages = rentalReplies.map((msg, index) => {
+    //     return (
+    //       // <Card
+    //       //   id="comment"
+    //       //   key={index}
+    //       //   index={index}
+    //       //   bg={cardBkg}
+    //       //   text={cardText}
+    //       // >
+    //       //   <Card.Body>
+    //       <div index={index} key={index}>
+    //         <div
+    //           className="ThreadBorder"
+    //           style={{ paddingTop: ".3rem", marginBottom: ".3rem" }}
+    //         ></div>
 
-            <Card.Title className="cardTitle">
-              {msg.$ownerId === this.props.identity ? (
-                <b style={{ color: "#008de4" }}>{this.props.uniqueName}</b>
-              ) : (
-                <b style={{ color: "#008de4" }}>{requestName.label}</b>
-              )}
+    //         <Card.Title className="cardTitle">
+    //           {msg.$ownerId === this.props.identity ? (
+    //             <b style={{ color: "#008de4" }}>{this.props.uniqueName}</b>
+    //           ) : (
+    //             <b style={{ color: "#008de4" }}>{requestName.label}</b>
+    //           )}
 
-              <span className="textsmaller">
-                {formatDate(
-                  msg.$createdAt,
-                  this.props.today,
-                  this.props.yesterday
-                )}
-              </span>
-            </Card.Title>
-            <Card.Text>{msg.msg}</Card.Text>
-          </div>
-          //   </Card.Body>
-          // </Card>
-        );
-      });
-    }
+    //           <span className="textsmaller">
+    //             {formatDate(
+    //               msg.$createdAt,
+    //               this.props.today,
+    //               this.props.yesterday
+    //             )}
+    //           </span>
+    //         </Card.Title>
+    //         <Card.Text>{msg.msg}</Card.Text>
+    //       </div>
+    //       //   </Card.Body>
+    //       // </Card>
+    //     );
+    //   });
+    // }
 
     return (
       <>
@@ -435,7 +473,7 @@ class Request extends React.Component {
               <></>
             )} */}
 
-            {confirm !== undefined && rentalReplies.length === 0 ? (
+            {/* {confirm !== undefined && rentalReplies.length === 0 ? (
               <>
                 <p style={{ textAlign: "center", paddingTop: ".5rem" }}>
                   (Currently, there are no messages to this reservation.)
@@ -443,9 +481,9 @@ class Request extends React.Component {
               </>
             ) : (
               <></>
-            )}
+            )} */}
 
-            {rentalReplyMessages}
+            {/* {rentalReplyMessages}
             <p></p>
             {confirm !== undefined ? (
               <>
@@ -465,7 +503,7 @@ class Request extends React.Component {
               </>
             ) : (
               <></>
-            )}
+            )} */}
           </Card.Body>
         </Card>
       </>
