@@ -54,7 +54,7 @@ class RentalsPage extends React.Component {
           />
 
           {this.props.Rentals.length === 0 && !this.props.isLoadingRentals ? (
-            <div className="bodytext">
+            <div className="bodytext" style={{ textAlign: "center" }}>
               <p>Sorry, there are no rentals available.</p>
             </div>
           ) : (

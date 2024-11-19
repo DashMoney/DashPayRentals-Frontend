@@ -213,6 +213,7 @@ class App extends React.Component {
         //   rate: 300000000,
         //   extraInstr:
         //     "Send me a friend request on DashPay to facilitate payments. Thanks!",
+        //Please have a Name-Wallet with 2-Party enabled to facilitate payment. Thanks!
         //   active: true,
         //   $updatedAt: Date.now() - 500000,
         // },
@@ -1218,6 +1219,7 @@ class App extends React.Component {
             Rentals: [],
             isLoadingRentals: false,
           });
+          this.getMerchantName();
         } else {
           let docArray = [];
           //console.log("Getting Rentals");
@@ -1653,8 +1655,8 @@ class App extends React.Component {
       this.setState({ isLoadingRequests: true });
     }
     if (this.state.Rentals.length !== 0) {
-      this.getConfirms();
       this.getRequests();
+      this.getConfirms();
     } else {
       this.setState({
         Merchant1: false,
@@ -1861,7 +1863,7 @@ class App extends React.Component {
               Controller1: true,
               RentalRequests: theDocArray,
               RentalRequestsProxies: proxyDocs,
-              RentalRequestsNames: [],
+              // RentalRequestsNames: [],
               RentalRequestsControllers: [],
             },
             () => this.controllerRace()
@@ -1887,7 +1889,7 @@ class App extends React.Component {
               Controller1: true,
               RentalRequests: theDocArray,
               RentalRequestsProxies: proxyDocs,
-              RentalRequestsNames: [],
+              //  RentalRequestsNames: [],
               RentalRequestsControllers: proxyDocArray,
             },
             () => this.controllerRace()
@@ -2868,7 +2870,14 @@ class App extends React.Component {
             }
           }
 
-          this.getYourRsrvsReplies(docArray, theDocArray);
+          this.setState({
+            RentalRequests: docArray, //theRequests,
+            RentalConfirms: theDocArray, //theConfirms,
+            RentalReplies: [],
+            isLoadingRequests: false,
+          });
+
+          //this.getYourRsrvsReplies(docArray, theDocArray);
         }
       })
       .catch((e) => {
@@ -2877,76 +2886,76 @@ class App extends React.Component {
       .finally(() => client.disconnect());
   };
 
-  getYourRsrvsReplies = (theConfirms, theRequests) => {
-    const client = new Dash.Client(dapiClientNoWallet(this.state.whichNetwork));
+  // getYourRsrvsReplies = (theConfirms, theRequests) => {
+  //   const client = new Dash.Client(dapiClientNoWallet(this.state.whichNetwork));
 
-    // This Below is to get unique set of Confirm doc ids
-    let arrayOfConfirmIds = theConfirms.map((doc) => {
-      return doc.$id;
-    });
+  //   // This Below is to get unique set of Confirm doc ids
+  //   let arrayOfConfirmIds = theConfirms.map((doc) => {
+  //     return doc.$id;
+  //   });
 
-    //console.log("Array of Confirm Req ids", arrayOfConfirmIds);
+  //   //console.log("Array of Confirm Req ids", arrayOfConfirmIds);
 
-    let setOfConfirmIds = [...new Set(arrayOfConfirmIds)];
+  //   let setOfConfirmIds = [...new Set(arrayOfConfirmIds)];
 
-    arrayOfConfirmIds = [...setOfConfirmIds];
+  //   arrayOfConfirmIds = [...setOfConfirmIds];
 
-    //console.log("Array of Confirm ids", arrayOfConfirmIds);
+  //   //console.log("Array of Confirm ids", arrayOfConfirmIds);
 
-    const getDocuments = async () => {
-      //console.log("Called Get Confirm Replies");
+  //   const getDocuments = async () => {
+  //     //console.log("Called Get Confirm Replies");
 
-      return client.platform.documents.get("RENTALSContract.reply", {
-        where: [
-          ["confirmId", "in", arrayOfConfirmIds],
-          ["$createdAt", "<=", Date.now()],
-        ],
-        orderBy: [
-          ["confirmId", "asc"],
-          ["$createdAt", "desc"],
-        ],
-      });
-    };
+  //     return client.platform.documents.get("RENTALSContract.reply", {
+  //       where: [
+  //         ["confirmId", "in", arrayOfConfirmIds],
+  //         ["$createdAt", "<=", Date.now()],
+  //       ],
+  //       orderBy: [
+  //         ["confirmId", "asc"],
+  //         ["$createdAt", "desc"],
+  //       ],
+  //     });
+  //   };
 
-    getDocuments()
-      .then((d) => {
-        //console.log("Getting YourRsrvsReplies");
-        if (d.length === 0) {
-          //console.log("There are no YourRsrvsReplies");
-          this.setState({
-            RentalRequests: theRequests,
-            RentalConfirms: theConfirms,
-            RentalReplies: [],
-            isLoadingRequests: false,
-          });
-        } else {
-          let docArray = [];
+  //   getDocuments()
+  //     .then((d) => {
+  //       //console.log("Getting YourRsrvsReplies");
+  //       if (d.length === 0) {
+  //         //console.log("There are no YourRsrvsReplies");
+  //         this.setState({
+  //           RentalRequests: theRequests,
+  //           RentalConfirms: theConfirms,
+  //           RentalReplies: [],
+  //           isLoadingRequests: false,
+  //         });
+  //       } else {
+  //         let docArray = [];
 
-          for (const n of d) {
-            let returnedDoc = n.toJSON();
-            //console.log("Reply:\n", returnedDoc);
-            returnedDoc.confirmId = Identifier.from(
-              returnedDoc.confirmId,
-              "base64"
-            ).toJSON();
-            //console.log("newReply:\n", returnedDoc);
-            //docArray = [...docArray, returnedDoc];
-            docArray = [returnedDoc, ...docArray];
-          }
+  //         for (const n of d) {
+  //           let returnedDoc = n.toJSON();
+  //           //console.log("Reply:\n", returnedDoc);
+  //           returnedDoc.confirmId = Identifier.from(
+  //             returnedDoc.confirmId,
+  //             "base64"
+  //           ).toJSON();
+  //           //console.log("newReply:\n", returnedDoc);
+  //           //docArray = [...docArray, returnedDoc];
+  //           docArray = [returnedDoc, ...docArray];
+  //         }
 
-          this.setState({
-            RentalRequests: theRequests,
-            RentalConfirms: theConfirms,
-            RentalReplies: docArray,
-            isLoadingRequests: false,
-          });
-        }
-      })
-      .catch((e) => {
-        console.error("Something went wrong Customer Replies:\n", e);
-      })
-      .finally(() => client.disconnect());
-  };
+  //         this.setState({
+  //           RentalRequests: theRequests,
+  //           RentalConfirms: theConfirms,
+  //           RentalReplies: docArray,
+  //           isLoadingRequests: false,
+  //         });
+  //       }
+  //     })
+  //     .catch((e) => {
+  //       console.error("Something went wrong Customer Replies:\n", e);
+  //     })
+  //     .finally(() => client.disconnect());
+  // };
 
   //SETTIMEOUT WAY BELOW
 

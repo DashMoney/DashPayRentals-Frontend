@@ -439,11 +439,9 @@ class AccountLogin extends React.Component {
                       <Button
                         variant="primary"
                         //size="lg"
-                        onClick={() =>
-                          this.props.handleSelectedPage("Inventory")
-                        }
+                        onClick={() => this.props.handleSelectedDapp("Rentals")}
                       >
-                        <b>Go to Inventory</b>
+                        <b>Go to Rentals</b>
                       </Button>
                     </div>
                   </>
