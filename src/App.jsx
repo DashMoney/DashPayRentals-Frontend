@@ -2572,7 +2572,7 @@ class App extends React.Component {
     this.setState({
       isLoadingRequests: true,
       isLoadingRentals: true,
-      selectedDapp: "Rentals",
+      selectedDapp: "Requests",
     });
 
     const client = new Dash.Client(
@@ -2871,8 +2871,8 @@ class App extends React.Component {
           }
 
           this.setState({
-            RentalRequests: docArray, //theRequests,
-            RentalConfirms: theDocArray, //theConfirms,
+            RentalRequests: theDocArray, //theRequests,
+            RentalConfirms: docArray, //theConfirms,
             RentalReplies: [],
             isLoadingRequests: false,
           });

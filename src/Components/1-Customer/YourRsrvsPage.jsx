@@ -9,15 +9,30 @@ import CreditsOnPage from "../CreditsOnPage";
 import YourRsrvs from "./YourRsrvs";
 
 class YourRsrvsPage extends React.Component {
-  // componentDidMount() {
-  //   if (this.props.isLoginComplete && this.props.InitialPullCustomer) {
-  //     this.props.pullInitialTriggerCUSTOMER();
-  //   }
-  // }
+  //https://stackoverflow.com/questions/37620694/how-to-scroll-to-bottom-in-react
+  scrollToTop = () => {
+    this.positionStart.scrollIntoView({
+      behavior: "instant",
+      block: "start",
+      inline: "nearest",
+    });
+  };
+
+  componentDidMount() {
+    this.scrollToTop();
+    //   if (this.props.isLoginComplete && this.props.InitialPullCustomer) {
+    //     this.props.pullInitialTriggerCUSTOMER();
+    //   }
+  }
   render() {
     return (
       <>
-        <div className="bodytext">
+        <div
+          className="bodytext"
+          ref={(el) => {
+            this.positionStart = el;
+          }}
+        >
           {/* <LowCreditsOnPage
             identityInfo={this.props.identityInfo}
             uniqueName={this.props.uniqueName}
