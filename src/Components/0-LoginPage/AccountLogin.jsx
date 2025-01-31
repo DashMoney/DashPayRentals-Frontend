@@ -367,7 +367,7 @@ class AccountLogin extends React.Component {
                               variant="primary"
                               //size="lg"
                               onClick={() =>
-                                this.props.handleSelectedDapp("Rentals")
+                                this.props.handleSelectedPage("Rentals")
                               }
                             >
                               <b>Go to Rentals</b>
@@ -439,7 +439,7 @@ class AccountLogin extends React.Component {
                       <Button
                         variant="primary"
                         //size="lg"
-                        onClick={() => this.props.handleSelectedDapp("Rentals")}
+                        onClick={() => this.props.handleSelectedPage("Rentals")}
                       >
                         <b>Go to Rentals</b>
                       </Button>

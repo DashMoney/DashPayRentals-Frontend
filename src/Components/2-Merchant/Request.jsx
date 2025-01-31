@@ -344,7 +344,10 @@ class Request extends React.Component {
                   <Button
                     variant="primary"
                     onClick={() =>
-                      this.props.handleConfirmRequestModal(this.props.request)
+                      this.props.handleConfirmRequestModal(
+                        this.props.request,
+                        requestName
+                      )
                     }
                   >
                     <b>Confirm Reservation</b>

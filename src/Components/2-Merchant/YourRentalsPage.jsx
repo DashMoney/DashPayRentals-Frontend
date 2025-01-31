@@ -59,7 +59,7 @@ class YourRentalsPage extends React.Component {
                 <Button
                   variant="primary"
                   // onClick={() => this.props.showModal("CreateRideModal")}
-                  onClick={() => this.props.handleSelectedDapp("Create Rental")}
+                  onClick={() => this.props.handleSelectedPage("Create Rental")}
                 >
                   <b style={{ fontSize: "larger" }}>Create Rental</b>
                 </Button>
@@ -82,7 +82,7 @@ class YourRentalsPage extends React.Component {
 
           <p></p>
           <YourRentals
-          whichNetwork={this.props.whichNetwork}
+            whichNetwork={this.props.whichNetwork}
             Rentals={this.props.Rentals}
             identity={this.props.identity}
             uniqueName={this.props.uniqueName}

@@ -271,7 +271,7 @@ class YourSelectedRental extends React.Component {
           <div className="cardTitle">
             <Button
               variant="primary"
-              onClick={() => this.props.handleSelectedDapp("Rentals")}
+              onClick={() => this.props.handleSelectedPage("Rentals")}
             >
               <IoMdArrowRoundBack size={28} />
             </Button>

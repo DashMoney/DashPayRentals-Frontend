@@ -488,7 +488,7 @@ class CreateRental extends React.Component {
 
     console.log(newRental);
     this.props.createRental(newRental);
-    this.props.handleSelectedDapp("Rentals");
+    this.props.handleSelectedPage("Rentals");
   };
 
   render() {
@@ -509,7 +509,7 @@ class CreateRental extends React.Component {
             {" "}
             <Button
               variant="primary"
-              onClick={() => this.props.handleSelectedDapp("Rentals")}
+              onClick={() => this.props.handleSelectedPage("Rentals")}
             >
               <IoMdArrowRoundBack size={28} />
             </Button>{" "}
@@ -547,16 +547,20 @@ class CreateRental extends React.Component {
                   Rental name is too long.
                 </Form.Control.Feedback>
               </Form.Group>
-
-              <div className="bodytext">
-                <ImgsComponent
-                  imgStateArray={this.state.imgStateArray}
-                  addFieldOfImg={this.addFieldOfImg}
-                  removeFieldOfImg={this.removeFieldOfImg}
-                  mode={this.props.mode}
-                />
-              </div>
-
+            </Form>
+            <div className="bodytext">
+              <ImgsComponent
+                imgStateArray={this.state.imgStateArray}
+                addFieldOfImg={this.addFieldOfImg}
+                removeFieldOfImg={this.removeFieldOfImg}
+                mode={this.props.mode}
+              />
+            </div>
+            <Form
+              noValidate
+              onSubmit={this.handleSubmitClick}
+              onChange={this.onChange}
+            >
               {/*  ADDRESS FORM BELOW */}
               <Form.Group className="mb-3" controlId="formAddress">
                 <h5 style={{ marginTop: ".2rem", marginBottom: ".2rem" }}>

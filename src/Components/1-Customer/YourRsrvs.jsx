@@ -27,7 +27,7 @@ class YourRsrvs extends React.Component {
             uniqueName={this.props.uniqueName}
             //
             handleSelectedYourRsrv={this.props.handleSelectedYourRsrv}
-            handleSelectedDapp={this.props.handleSelectedDapp}
+            handleSelectedPage={this.props.handleSelectedPage}
             handleSelectedRental={this.props.handleSelectedRental}
             handleCustomerReplyModalShow={
               this.props.handleCustomerReplyModalShow

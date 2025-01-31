@@ -109,7 +109,7 @@ class YourRsrvsPage extends React.Component {
                 MerchantNameDoc={this.props.MerchantNameDoc}
                 uniqueName={this.props.uniqueName}
                 //
-                handleSelectedDapp={this.props.handleSelectedDapp}
+                handleSelectedPage={this.props.handleSelectedPage}
                 handleSelectedRental={this.props.handleSelectedRental}
                 handleCustomerReplyModalShow={
                   this.props.handleCustomerReplyModalShow

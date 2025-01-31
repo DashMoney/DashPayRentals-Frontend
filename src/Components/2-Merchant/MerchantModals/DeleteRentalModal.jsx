@@ -10,8 +10,26 @@ import Modal from "react-bootstrap/Modal";
 import CloseButton from "react-bootstrap/CloseButton";
 
 class DeleteRentalModal extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      loadTime: 4,
+    };
+  }
   handleCloseClick = () => {
     this.props.hideModal();
+  };
+  decrementTimer = () => {
+    this.setState({
+      loadTime: this.state.loadTime - 1,
+    });
+    if (this.state.loadTime >= 1) {
+      const myTimeout = setTimeout(this.decrementTimer, 1000);
+    }
+  };
+
+  componentDidMount = () => {
+    this.decrementTimer();
   };
 
   render() {
@@ -88,9 +106,16 @@ class DeleteRentalModal extends React.Component {
           </Alert>
         </Modal.Body>
         <div className="TwoButtons">
-          <Button variant="primary" onClick={() => this.props.deleteRental()}>
-            <b>Delete Rental</b>
-          </Button>
+          {this.state.LoadingConfirms || this.state.loadTime >= 1 ? (
+            <Button variant="primary" disabled>
+              <b>Delete Rental({this.state.loadTime})</b>
+            </Button>
+          ) : (
+            <Button variant="primary" onClick={() => this.props.deleteRental()}>
+              <b>Delete Rental</b>
+            </Button>
+          )}
+
           <Button variant="primary" onClick={() => this.handleCloseClick()}>
             <b>Cancel</b>
           </Button>

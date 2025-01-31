@@ -6,7 +6,7 @@ class NavSelects extends React.Component {
   render() {
     return (
       <>
-        {this.props.selectedDapp === this.props.selection ? (
+        {this.props.selectedPage === this.props.selection ? (
           <div
             className="d-grid gap-2"
             style={{ marginTop: ".4rem", marginBottom: ".4rem" }}
@@ -14,7 +14,7 @@ class NavSelects extends React.Component {
             <Nav.Item
               className="canvasLink"
               onClick={() =>
-                this.props.handleSelectedDapp(this.props.selection)
+                this.props.handleSelectedPage(this.props.selection)
               }
             >
               <h5 style={{ textDecoration: "underline" }}>
@@ -30,7 +30,7 @@ class NavSelects extends React.Component {
             <Nav.Item
               className="canvasLink"
               onClick={() =>
-                this.props.handleSelectedDapp(this.props.selection)
+                this.props.handleSelectedPage(this.props.selection)
               }
             >
               <h5>

@@ -34,8 +34,11 @@ import BlockConfirmModal from "./Components/2-Merchant/MerchantModals/BlockConfi
 import MakeRequestModal from "./Components/1-Customer/CustomerModals/MakeRequestModal";
 import DeleteRequestModal from "./Components/1-Customer/CustomerModals/DeleteRequestModal";
 
-import MerchantReplyModal from "./Components/2-Merchant/MerchantModals/MerchantReplyModal";
-import CustomerReplyModal from "./Components/1-Customer/CustomerModals/CustomerReplyModal";
+// import MerchantReplyModal from "./Components/2-Merchant/MerchantModals/MerchantReplyModal";
+// import CustomerReplyModal from "./Components/1-Customer/CustomerModals/CustomerReplyModal";
+import AboutUsPageCustomer from "./Components/1-Customer/AboutUsPageCustomer";
+import AboutUsPageMerchant from "./Components/2-Merchant/AboutUsPageMerchant";
+import AboutUsConfirmModal from "./Components/2-Merchant/AboutUsConfirmModal";
 
 import DeleteBlockConfirmModal from "./Components/2-Merchant/MerchantModals/DeleteBlockConfirmModal";
 
@@ -88,7 +91,7 @@ class App extends React.Component {
       nameError: false,
       //ACCOUNT 'LOGIN' PAGE STATE^^^^^^
 
-      selectedDapp: "Rentals", //"Requests",
+      selectedPage: "Rentals", //"Requests",
 
       presentModal: "",
       isModalShowing: false,
@@ -135,12 +138,14 @@ class App extends React.Component {
 
       isLoadingRentals: true,
       isLoadingRequests: true,
+      isLoadingAboutUs: true,
 
       SelectedRental: "", // should be the rental document
       selectedRentalIndex: "", //for editing and deleting rental
 
       selectedRequest: "",
       selectedRequestIndex: "",
+      selectedReqName: "",
 
       selectedArriveDate: "",
       selectedDepartureDate: "",
@@ -157,6 +162,9 @@ class App extends React.Component {
 
       InitialPullCustomer: true,
       InitialPullMerchant: true,
+      InitialPullAboutUs: true,
+
+      AboutUsDoc: "",
 
       Rentals: [
         // {
@@ -272,7 +280,7 @@ class App extends React.Component {
         //   },
       ], //This can be searched on page load like groups
 
-      RentalReplies: [],
+      //RentalReplies: [], //REMOVE REPLIES, FEATURE CHANGED
 
       MerchantId: import.meta.env.VITE_MERCHANT_IDENTITY,
 
@@ -280,6 +288,8 @@ class App extends React.Component {
         $ownerId: import.meta.env.VITE_MERCHANT_IDENTITY,
         label: "No name avail", //import.meta.env.VITE_FRONTEND_NAME
       },
+
+      merchantNameDocVerified: true,
 
       DisplayRequests: "Requests",
 
@@ -988,7 +998,13 @@ class App extends React.Component {
     if (theIdentity === this.state.MerchantId) {
       this.startMerchantRace();
     } else {
-      this.getYourRsrvs(theIdentity);
+      if (this.state.Rentals.length !== 0) {
+        this.getYourRsrvs(theIdentity);
+      } else {
+        this.setState({
+          isLoadingRequests: false,
+        });
+      }
     }
 
     //if(this.state.platformLogin){}
@@ -1164,16 +1180,16 @@ class App extends React.Component {
    */
   //BELOW - this is Initial Rentals!
 
-  handleSelectedDapp = (theDapp) => {
+  handleSelectedPage = (theDapp) => {
     this.setState({
-      selectedDapp: theDapp,
+      selectedPage: theDapp,
       expandedTopNav: false,
     });
   };
 
   handleSelectedRental = (theRental) => {
     this.setState({
-      selectedDapp: "Selected Rental",
+      selectedPage: "Selected Rental",
       SelectedRental: theRental,
       expandedTopNav: false,
     });
@@ -1273,19 +1289,32 @@ class App extends React.Component {
           console.log("There is no Name.");
           this.setState({
             isLoadingMerchantName: false,
+            merchantNameDocVerified: false,
           });
         } else {
           let nameRetrieved = d[0].toJSON();
           //console.log("Merchant Name retrieved:\n", nameRetrieved);
-          this.setState({
-            isLoadingMerchantName: false,
-            MerchantNameDoc: nameRetrieved,
-          });
+          if (
+            import.meta.env.VITE_MERCHANT_IDENTITY === nameRetrieved.$ownerId &&
+            import.meta.env.VITE_MERCHANT_NAME === nameRetrieved.label
+          ) {
+            this.setState({
+              isLoadingMerchantName: false,
+              MerchantNameDoc: nameRetrieved,
+              //merchantNameDocVerified:true,
+            });
+          } else {
+            this.setState({
+              isLoadingMerchantName: false,
+              merchantNameDocVerified: false,
+            });
+          }
         }
       })
       .catch((e) => {
         this.setState({
           isLoadingMerchantName: false,
+          merchantNameDocVerified: false,
         });
         console.error("Something went wrong getting merchant name:\n", e);
       })
@@ -1401,7 +1430,7 @@ class App extends React.Component {
     //  console.log("Called Edit Rental");
     this.setState({
       isLoadingRentals: true,
-      selectedDapp: "Rentals",
+      selectedPage: "Rentals",
     });
 
     const client = new Dash.Client(
@@ -1598,6 +1627,249 @@ class App extends React.Component {
       .finally(() => client.disconnect());
   };
 
+  //ABOUT US
+
+  pullInitialTriggerABOUTUS = () => {
+    if (this.state.InitialPullAboutUs) {
+      this.getAboutUs();
+      this.setState({
+        InitialPullAboutUs: false,
+      });
+    }
+  };
+
+  getAboutUs = () => {
+    const client = new Dash.Client(dapiClientNoWallet(this.state.whichNetwork));
+
+    const getDocuments = async () => {
+      return client.platform.documents.get("RENTALSContract.about", {
+        where: [
+          ["$ownerId", "==", this.state.MerchantId],
+          // ["$updatedAt", "<=", Date.now()],
+        ],
+        // orderBy: [["$updatedAt", "desc"]],
+      });
+    };
+
+    getDocuments()
+      .then((d) => {
+        if (d.length === 0) {
+          console.log("There are no About Us");
+
+          this.setState({
+            AboutUsDoc: "",
+            isLoadingAboutUs: false,
+          });
+        } else {
+          let docArray = [];
+          //console.log("Getting AboutUs");
+
+          for (const n of d) {
+            let returnedDoc = n.toJSON();
+            //console.log("AboutUs:\n", returnedDoc);
+            // returnedDoc.replyId = Identifier.from(
+            //   returnedDoc.replyId,
+            //   "base64"
+            // ).toJSON();
+            returnedDoc.details = JSON.parse(returnedDoc.details);
+            //console.log("newAboutUs:\n", returnedDoc.items);
+            docArray = [...docArray, returnedDoc];
+          }
+
+          this.setState({
+            AboutUsDoc: docArray[0],
+            isLoadingAboutUs: false,
+          });
+        }
+      })
+      .catch((e) => {
+        console.error("Something went wrong Getting AboutUs:\n", e);
+      })
+      .finally(() => client.disconnect());
+  };
+
+  handleAboutUsConfirmModal = (theAboutUs) => {
+    this.setState(
+      {
+        AboutUsToSave: theAboutUs,
+      },
+      () => this.showModal("AboutUsConfirmModal")
+    );
+  };
+
+  saveAboutUs = () => {
+    if (this.state.AboutUsDoc === "") {
+      this.createAboutUs(this.state.AboutUsToSave);
+    } else {
+      this.editAboutUs(this.state.AboutUsToSave);
+    }
+  };
+
+  createAboutUs = (theAboutUs) => {
+    console.log("Called Create AboutUs");
+
+    this.setState({
+      isLoadingAboutUs: true,
+    });
+
+    const client = new Dash.Client(
+      dapiClient(
+        this.state.whichNetwork,
+        this.state.mnemonic,
+        this.state.skipSynchronizationBeforeHeight
+      )
+    );
+
+    const submitAboutUsDoc = async () => {
+      const { platform } = client;
+
+      let identity = "";
+      if (this.state.identityRaw !== "") {
+        identity = this.state.identityRaw;
+      } else {
+        identity = await platform.identities.get(this.state.identity);
+      }
+      let aboutUsProperties = {
+        details: JSON.stringify(theAboutUs),
+      };
+
+      //console.log('AboutUs to Create: ', aboutUsProperties);
+
+      // Create the document
+      const aboutUsDocument = await platform.documents.create(
+        "RENTALSContract.about",
+        identity,
+        aboutUsProperties
+      );
+
+      //############################################################
+      //This below disconnects the document sending..***
+
+      //return aboutUsDocument;
+
+      //This is to disconnect the Document Creation***
+      //############################################################
+
+      const documentBatch = {
+        create: [aboutUsDocument], // Document(s) to create
+      };
+
+      await platform.documents.broadcast(documentBatch, identity);
+      return aboutUsDocument;
+    };
+
+    submitAboutUsDoc()
+      .then((d) => {
+        let returnedDoc = d.toJSON();
+        //console.log("Document:\n", returnedDoc);
+
+        // returnedDoc.replyId = Identifier.from(
+        //   returnedDoc.replyId,
+        //   "base64"
+        // ).toJSON();
+
+        returnedDoc.details = JSON.parse(returnedDoc.details);
+
+        console.log("AboutUsDocument:\n", returnedDoc);
+
+        this.setState(
+          {
+            AboutUsDoc: returnedDoc,
+            isLoadingAboutUs: false,
+          },
+          () => this.loadIdentityCredits()
+        );
+      })
+      .catch((e) => {
+        console.error("Something went wrong with About Us creation:\n", e);
+      })
+      .finally(() => client.disconnect());
+  };
+
+  editAboutUs = (theAboutUs) => {
+    //If the aboutUs are not stringified, then need to stringify before saving
+
+    // console.log("Called Edit About Us");
+    this.setState({
+      isLoadingAboutUs: true,
+    });
+
+    const client = new Dash.Client(
+      dapiClient(
+        this.state.whichNetwork,
+        this.state.mnemonic,
+        this.state.skipSynchronizationBeforeHeight
+      )
+    );
+
+    const submitItemDoc = async () => {
+      const { platform } = client;
+
+      let identity = "";
+      if (this.state.identityRaw !== "") {
+        identity = this.state.identityRaw;
+      } else {
+        identity = await platform.identities.get(this.state.identity);
+      }
+
+      const [document] = await client.platform.documents.get(
+        "RENTALSContract.about",
+        {
+          where: [["$id", "==", this.state.AboutUsDoc.$id]],
+        }
+      );
+
+      document.set("details", JSON.stringify(theAboutUs));
+
+      // if (this.state.SelectedItem.open !== itemObject.open) {
+      //   document.set("open", itemObject.open);
+      // }
+
+      await platform.documents.broadcast({ replace: [document] }, identity);
+      return document;
+
+      //############################################################
+      //This below disconnects the document editing..***
+
+      //return document;
+
+      //This is to disconnect the Document editing***
+      //############################################################
+    };
+
+    submitItemDoc()
+      .then((d) => {
+        let returnedDoc = d.toJSON();
+
+        returnedDoc.details = JSON.parse(returnedDoc.details);
+
+        console.log("Edited AboutUs:\n", returnedDoc);
+
+        // returnedDoc.replyId = Identifier.from(
+        //   returnedDoc.replyId,
+        //   "base64"
+        // ).toJSON();
+
+        //this.combineAboutUsANDConfirms()
+
+        // let editedAboutUs = this.state.AboutUs;
+
+        // editedAboutUs.splice(this.state.SelectedItemIndex, 1, returnedDoc);
+
+        this.setState(
+          {
+            AboutUsDoc: returnedDoc,
+            isLoadingAboutUs: false,
+          },
+          () => this.loadIdentityCredits()
+        );
+      })
+      .catch((e) => {
+        console.error("Something went wrong with Edit AboutUs:\n", e);
+      })
+      .finally(() => client.disconnect());
+  };
+
   /*
   * RENTALS FUNCTIONS^^^^
    
@@ -1722,6 +1994,10 @@ class App extends React.Component {
             //console.log("Requests:\n", returnedDoc);
             returnedDoc.rentalId = Identifier.from(
               returnedDoc.rentalId,
+              "base64"
+            ).toJSON();
+            returnedDoc.toId = Identifier.from(
+              returnedDoc.toId,
               "base64"
             ).toJSON();
             //  console.log("newRequest:\n", returnedDoc);
@@ -2036,7 +2312,7 @@ class App extends React.Component {
           this.setState(
             {
               RentalConfirms: [],
-              RentalReplies: [],
+              //RentalReplies: [],
               Merchant2: true,
             },
             () => this.merchantRace()
@@ -2055,13 +2331,17 @@ class App extends React.Component {
               returnedDoc.rentalId,
               "base64"
             ).toJSON();
+            returnedDoc.toId = Identifier.from(
+              returnedDoc.toId,
+              "base64"
+            ).toJSON();
             // console.log("newConfirm:\n", returnedDoc);
             docArray = [...docArray, returnedDoc];
           }
           this.setState(
             {
               RentalConfirms: docArray,
-              RentalReplies: [],
+              //RentalReplies: [],
               Merchant2: true,
             },
             () => this.merchantRace()
@@ -2150,7 +2430,7 @@ class App extends React.Component {
   //     .finally(() => client.disconnect());
   // };
 
-  handleConfirmRequestModal = (theRequest) => {
+  handleConfirmRequestModal = (theRequest, theNameDoc) => {
     //HAVE TO DETERMINE THE RENTAL of request ->
     let requestRental = this.state.Rentals.find((rental) => {
       return rental.$id === theRequest.rentalId;
@@ -2159,6 +2439,7 @@ class App extends React.Component {
     this.setState(
       {
         selectedRequest: theRequest,
+        selectedReqName: theNameDoc,
         SelectedRental: requestRental,
       },
       () => this.showModal("ConfirmRequestModal")
@@ -2181,7 +2462,8 @@ class App extends React.Component {
     this.setState({
       isLoadingRequests: true,
       isLoadingRentals: true,
-      selectedDapp: "Rentals",
+      //selectedPage: "Rentals",
+      DisplayRequests: "Confirmed",
     });
 
     const client = new Dash.Client(
@@ -2207,9 +2489,9 @@ class App extends React.Component {
         departDate: this.state.selectedRequest.departDate,
         rentalId: this.state.SelectedRental.$id,
         reqId: this.state.selectedRequest.$id,
-        //toId
+        toId: this.state.selectedReqName.$ownerId, //This should be Owner and not Proxy.
         amt: this.state.selectedRequest.amt,
-        // pmtObj
+        msg: "",
       };
       //console.log(' Create: ', confirmProperties);
 
@@ -2250,6 +2532,8 @@ class App extends React.Component {
           "base64"
         ).toJSON();
 
+        returnedDoc.toId = Identifier.from(returnedDoc.toId, "base64").toJSON();
+
         console.log("Request Confirm:\n", returnedDoc);
 
         this.setState(
@@ -2274,7 +2558,7 @@ class App extends React.Component {
     this.setState({
       isLoadingRequests: true,
       isLoadingRentals: true,
-      selectedDapp: "Rentals",
+      selectedPage: "Rentals",
     });
 
     const client = new Dash.Client(
@@ -2342,6 +2626,7 @@ class App extends React.Component {
           returnedDoc.reqId,
           "base64"
         ).toJSON();
+        returnedDoc.toId = Identifier.from(returnedDoc.toId, "base64").toJSON();
 
         console.log("Document:\n", returnedDoc);
 
@@ -2455,86 +2740,86 @@ class App extends React.Component {
   //confirmId createdAt - query
   // confirmId && msg - attributes
 
-  createMerchantReply = (replyMsgComment) => {
-    //console.log("Called Merchant Message Submit: ", replyMsgComment);
+  // createMerchantReply = (replyMsgComment) => {
+  //   //console.log("Called Merchant Message Submit: ", replyMsgComment);
 
-    this.setState({
-      isLoadingRequests: true,
-    });
+  //   this.setState({
+  //     isLoadingRequests: true,
+  //   });
 
-    const client = new Dash.Client(
-      dapiClient(
-        this.state.whichNetwork,
-        this.state.mnemonic,
-        this.state.skipSynchronizationBeforeHeight
-      )
-    );
+  //   const client = new Dash.Client(
+  //     dapiClient(
+  //       this.state.whichNetwork,
+  //       this.state.mnemonic,
+  //       this.state.skipSynchronizationBeforeHeight
+  //     )
+  //   );
 
-    const submitMsgDoc = async () => {
-      const { platform } = client;
+  //   const submitMsgDoc = async () => {
+  //     const { platform } = client;
 
-      let identity = "";
-      if (this.state.identityRaw !== "") {
-        identity = this.state.identityRaw;
-      } else {
-        identity = await platform.identities.get(this.state.identity);
-      }
+  //     let identity = "";
+  //     if (this.state.identityRaw !== "") {
+  //       identity = this.state.identityRaw;
+  //     } else {
+  //       identity = await platform.identities.get(this.state.identity);
+  //     }
 
-      const replyProperties = {
-        confirmId: this.state.selectedConfirm.$id,
-        msg: replyMsgComment,
-      };
-      //console.log('Reply to Create: ', replyProperties);
+  //     const replyProperties = {
+  //       confirmId: this.state.selectedConfirm.$id,
+  //       msg: replyMsgComment,
+  //     };
+  //     //console.log('Reply to Create: ', replyProperties);
 
-      // Create the note document
-      const rentalDocument = await platform.documents.create(
-        "RENTALSContract.reply",
-        identity,
-        replyProperties
-      );
+  //     // Create the note document
+  //     const rentalDocument = await platform.documents.create(
+  //       "RENTALSContract.reply",
+  //       identity,
+  //       replyProperties
+  //     );
 
-      //############################################################
-      //This below disconnects the document sending..***
+  //     //############################################################
+  //     //This below disconnects the document sending..***
 
-      //return rentalDocument;
+  //     //return rentalDocument;
 
-      //This is to disconnect the Document Creation***
-      //############################################################
+  //     //This is to disconnect the Document Creation***
+  //     //############################################################
 
-      const documentBatch = {
-        create: [rentalDocument], // Document(s) to create
-      };
+  //     const documentBatch = {
+  //       create: [rentalDocument], // Document(s) to create
+  //     };
 
-      await platform.documents.broadcast(documentBatch, identity);
-      return rentalDocument;
-    };
+  //     await platform.documents.broadcast(documentBatch, identity);
+  //     return rentalDocument;
+  //   };
 
-    submitMsgDoc()
-      .then((d) => {
-        let returnedDoc = d.toJSON();
-        console.log("Document:\n", returnedDoc);
+  //   submitMsgDoc()
+  //     .then((d) => {
+  //       let returnedDoc = d.toJSON();
+  //       console.log("Document:\n", returnedDoc);
 
-        returnedDoc.confirmId = Identifier.from(
-          returnedDoc.confirmId,
-          "base64"
-        ).toJSON();
+  //       returnedDoc.confirmId = Identifier.from(
+  //         returnedDoc.confirmId,
+  //         "base64"
+  //       ).toJSON();
 
-        this.setState(
-          {
-            RentalReplies: [...this.state.RentalReplies, returnedDoc],
-            isLoadingRequests: false,
-          },
-          () => this.loadIdentityCredits()
-        );
-      })
-      .catch((e) => {
-        console.error(
-          "Something went wrong with Merchant Reply Msg creation:\n",
-          e
-        );
-      })
-      .finally(() => client.disconnect());
-  };
+  //       this.setState(
+  //         {
+  //           RentalReplies: [...this.state.RentalReplies, returnedDoc],
+  //           isLoadingRequests: false,
+  //         },
+  //         () => this.loadIdentityCredits()
+  //       );
+  //     })
+  //     .catch((e) => {
+  //       console.error(
+  //         "Something went wrong with Merchant Reply Msg creation:\n",
+  //         e
+  //       );
+  //     })
+  //     .finally(() => client.disconnect());
+  // };
 
   /*
    * MERCHANT FUNCTIONS^^^^
@@ -2566,13 +2851,13 @@ class App extends React.Component {
   };
 
   createRequest = () => {
-    console.log("Called Create Request");
+    //console.log("Called Create Request");
     this.hideModal();
 
     this.setState({
       isLoadingRequests: true,
       isLoadingRentals: true,
-      selectedDapp: "Requests",
+      selectedPage: "Requests",
     });
 
     const client = new Dash.Client(
@@ -2597,6 +2882,7 @@ class App extends React.Component {
         arriveDate: this.state.selectedArriveDate, //This should be in ms
         departDate: this.state.selectedDepartureDate, //This should be in ms
         rentalId: this.state.SelectedRental.$id,
+        toId: this.state.SelectedRental.$ownerId,
         amt: Number(
           (
             this.state.SelectedRental.rate *
@@ -2607,10 +2893,7 @@ class App extends React.Component {
             ).toFixed(0)
           ).toFixed(0)
         ),
-
-        //toId
-        //txObj
-        //msg
+        msg: "",
       };
       //console.log(' Create: ', requestProperties);
 
@@ -2645,6 +2928,7 @@ class App extends React.Component {
           returnedDoc.rentalId,
           "base64"
         ).toJSON();
+        returnedDoc.toId = Identifier.from(returnedDoc.toId, "base64").toJSON();
 
         console.log("Document:\n", returnedDoc);
 
@@ -2745,16 +3029,6 @@ class App extends React.Component {
   //   });
   // };
 
-  // pullOnPageLoadTriggerDRIVERS = () => {
-  //   //THIS IS FOR WHEN YOU SELECT THE DAPP, IT LOADS MOST RECENT RIDES POSTED
-  //   if (this.state.OnPageLoadDRIVERS) {
-  //     this.getInitialDrives();
-  //     this.setState({
-  //       OnPageLoadDRIVERS: false,
-  //     });
-  //   }
-  // };
-
   getYourRsrvs = (theIdentity) => {
     //console.log("Calling getYourRsrvs");
     if (!this.state.isLoadingRequests) {
@@ -2800,6 +3074,10 @@ class App extends React.Component {
             //console.log("Requests:\n", returnedDoc);
             returnedDoc.rentalId = Identifier.from(
               returnedDoc.rentalId,
+              "base64"
+            ).toJSON();
+            returnedDoc.toId = Identifier.from(
+              returnedDoc.toId,
               "base64"
             ).toJSON();
             // console.log("newRequest:\n", returnedDoc);
@@ -2971,8 +3249,13 @@ class App extends React.Component {
       isYourRsrvsRefreshReady: false, // pass to refresh button
     });
 
-    this.getYourRsrvs(this.state.identity);
-    //
+    if (this.state.Rentals.length !== 0) {
+      this.getYourRsrvs(this.state.identity);
+    } else {
+      this.setState({
+        isLoadingRequests: false,
+      });
+    }
 
     //REFRESH -> TIMEOUT
     //if (!this.state.isYourRsrvsRefreshReady) {
@@ -2981,98 +3264,98 @@ class App extends React.Component {
     //REFRESH -> TIMEOUT
   };
 
-  handleCustomerReplyModalShow = (theConfirm) => {
-    this.setState(
-      {
-        selectedConfirm: theConfirm,
-      },
-      () => this.showModal("CustomerReplyModal")
-    );
-  };
+  // handleCustomerReplyModalShow = (theConfirm) => {
+  //   this.setState(
+  //     {
+  //       selectedConfirm: theConfirm,
+  //     },
+  //     () => this.showModal("CustomerReplyModal")
+  //   );
+  // };
 
   //confirmId createdAt - query
   // confirmId && msg - attributes
 
-  createCustomerReply = (replyMsgComment) => {
-    //console.log("Called Customer Message Submit: ", replyMsgComment);
+  // createCustomerReply = (replyMsgComment) => {
+  //   //console.log("Called Customer Message Submit: ", replyMsgComment);
 
-    this.setState({
-      isLoadingRequests: true,
-    });
+  //   this.setState({
+  //     isLoadingRequests: true,
+  //   });
 
-    const client = new Dash.Client(
-      dapiClient(
-        this.state.whichNetwork,
-        this.state.mnemonic,
-        this.state.skipSynchronizationBeforeHeight
-      )
-    );
+  //   const client = new Dash.Client(
+  //     dapiClient(
+  //       this.state.whichNetwork,
+  //       this.state.mnemonic,
+  //       this.state.skipSynchronizationBeforeHeight
+  //     )
+  //   );
 
-    const submitMsgDoc = async () => {
-      const { platform } = client;
+  //   const submitMsgDoc = async () => {
+  //     const { platform } = client;
 
-      let identity = "";
-      if (this.state.identityRaw !== "") {
-        identity = this.state.identityRaw;
-      } else {
-        identity = await platform.identities.get(this.state.identity);
-      }
+  //     let identity = "";
+  //     if (this.state.identityRaw !== "") {
+  //       identity = this.state.identityRaw;
+  //     } else {
+  //       identity = await platform.identities.get(this.state.identity);
+  //     }
 
-      const replyProperties = {
-        confirmId: this.state.selectedConfirm.$id,
-        msg: replyMsgComment,
-      };
-      //console.log('Reply to Create: ', replyProperties);
+  //     const replyProperties = {
+  //       confirmId: this.state.selectedConfirm.$id,
+  //       msg: replyMsgComment,
+  //     };
+  //     //console.log('Reply to Create: ', replyProperties);
 
-      // Create the note document
-      const rentalDocument = await platform.documents.create(
-        "RENTALSContract.reply",
-        identity,
-        replyProperties
-      );
+  //     // Create the note document
+  //     const rentalDocument = await platform.documents.create(
+  //       "RENTALSContract.reply",
+  //       identity,
+  //       replyProperties
+  //     );
 
-      //############################################################
-      //This below disconnects the document sending..***
+  //     //############################################################
+  //     //This below disconnects the document sending..***
 
-      //return rentalDocument;
+  //     //return rentalDocument;
 
-      //This is to disconnect the Document Creation***
-      //############################################################
+  //     //This is to disconnect the Document Creation***
+  //     //############################################################
 
-      const documentBatch = {
-        create: [rentalDocument], // Document(s) to create
-      };
+  //     const documentBatch = {
+  //       create: [rentalDocument], // Document(s) to create
+  //     };
 
-      await platform.documents.broadcast(documentBatch, identity);
-      return rentalDocument;
-    };
+  //     await platform.documents.broadcast(documentBatch, identity);
+  //     return rentalDocument;
+  //   };
 
-    submitMsgDoc()
-      .then((d) => {
-        let returnedDoc = d.toJSON();
-        console.log("Document:\n", returnedDoc);
+  //   submitMsgDoc()
+  //     .then((d) => {
+  //       let returnedDoc = d.toJSON();
+  //       console.log("Document:\n", returnedDoc);
 
-        returnedDoc.confirmId = Identifier.from(
-          returnedDoc.confirmId,
-          "base64"
-        ).toJSON();
+  //       returnedDoc.confirmId = Identifier.from(
+  //         returnedDoc.confirmId,
+  //         "base64"
+  //       ).toJSON();
 
-        this.setState(
-          {
-            RentalReplies: [...this.state.RentalReplies, returnedDoc],
-            isLoadingRequests: false,
-          },
-          () => this.loadIdentityCredits()
-        );
-      })
-      .catch((e) => {
-        console.error(
-          "Something went wrong with Customer Reply Msg creation:\n",
-          e
-        );
-      })
-      .finally(() => client.disconnect());
-  };
+  //       this.setState(
+  //         {
+  //           RentalReplies: [...this.state.RentalReplies, returnedDoc],
+  //           isLoadingRequests: false,
+  //         },
+  //         () => this.loadIdentityCredits()
+  //       );
+  //     })
+  //     .catch((e) => {
+  //       console.error(
+  //         "Something went wrong with Customer Reply Msg creation:\n",
+  //         e
+  //       );
+  //     })
+  //     .finally(() => client.disconnect());
+  // };
 
   /*
    *CUSTOMER FUNCTIONS^^^^
@@ -3943,24 +4226,40 @@ class App extends React.Component {
           isLoggedIn={this.state.isLoggedIn}
           toggleTopNav={this.toggleTopNav}
           expandedTopNav={this.state.expandedTopNav}
-          selectedDapp={this.state.selectedDapp}
-          handleSelectedDapp={this.handleSelectedDapp}
+          selectedPage={this.state.selectedPage}
+          handleSelectedPage={this.handleSelectedPage}
           uniqueName={uniqueName}
           identity={this.state.identity}
           identityInfo={this.state.identityInfo}
         />
         <Image fluid="true" id="dash-bkgd" src={DashBkgd} alt="Dash Logo" />
         <Container className="g-0">
+          {this.state.merchantNameDocVerified ? (
+            <></>
+          ) : (
+            <>
+              <h3
+                style={{
+                  textAlign: "center",
+                  color: "red",
+                  marginTop: ".5rem",
+                }}
+              >
+                MerchantId OR MerchantName fail to match Dash Platform State.
+                Continue at own risk.
+              </h3>
+            </>
+          )}
           <Row className="justify-content-md-center">
             <Col md={9} lg={8} xl={7} xxl={6}>
-              {/* {this.state.selectedDapp === "Login" && showWhyMoney ? (
+              {/* {this.state.selectedPage === "Login" && showWhyMoney ? (
                 <>
-                  <WhyMoney handleSelectedDapp={this.handleSelectedDapp} />
+                  <WhyMoney handleSelectedPage={this.handleSelectedPage} />
                 </>
               ) : (
                 <></>
               )} */}
-              {this.state.selectedDapp === "Login" ? ( // && !showWhyMoney
+              {this.state.selectedPage === "Login" ? ( // && !showWhyMoney
                 <>
                   {!this.state.isLoggedIn ? (
                     <>
@@ -3988,7 +4287,7 @@ class App extends React.Component {
                         handleAccountRetry={this.handleAccountRetry}
                         showModal={this.showModal}
                         toggleTopNav={this.toggleTopNav}
-                        handleSelectedDapp={this.handleSelectedDapp}
+                        handleSelectedPage={this.handleSelectedPage}
                         isLoadingIdentity={this.state.isLoadingIdentity}
                         isLoadingIdInfo={this.state.isLoadingIdInfo}
                         identityRegisterCount={this.state.identityRegisterCount}
@@ -4012,7 +4311,7 @@ class App extends React.Component {
               )}
               {loggedInAs === "merchant" ? (
                 <>
-                  {this.state.selectedDapp === "Rentals" ? (
+                  {this.state.selectedPage === "Rentals" ? (
                     <>
                       <YourRentalsPage
                         whichNetwork={this.state.whichNetwork}
@@ -4021,7 +4320,7 @@ class App extends React.Component {
                         identityInfo={this.state.identityInfo}
                         uniqueName={uniqueName}
                         mode={this.state.mode}
-                        handleSelectedDapp={this.handleSelectedDapp}
+                        handleSelectedPage={this.handleSelectedPage}
                         handleSelectedRental={this.handleSelectedRental}
                         Rentals={this.state.Rentals}
                         //
@@ -4034,7 +4333,7 @@ class App extends React.Component {
                     <></>
                   )}
 
-                  {this.state.selectedDapp === "Requests" ? (
+                  {this.state.selectedPage === "Requests" ? (
                     <>
                       <RequestsPage
                         whichNetwork={this.state.whichNetwork}
@@ -4088,8 +4387,31 @@ class App extends React.Component {
                   ) : (
                     <></>
                   )}
+                  {this.state.selectedPage === "About Us" ? (
+                    <>
+                      <AboutUsPageMerchant
+                        isLoadingAboutUs={this.state.isLoadingAboutUs}
+                        pullInitialTriggerABOUTUS={
+                          this.pullInitialTriggerABOUTUS
+                        }
+                        AboutUsDoc={this.state.AboutUsDoc}
+                        identity={this.state.identity}
+                        identityInfo={this.state.identityInfo}
+                        uniqueName={uniqueName}
+                        mode={this.state.mode}
+                        accountBalance={this.state.accountBalance}
+                        isLoadingWallet={this.state.isLoadingWallet}
+                        handleAboutUsConfirmModal={
+                          this.handleAboutUsConfirmModal
+                        }
+                        handleSelectedPage={this.handleSelectedPage}
+                      />
+                    </>
+                  ) : (
+                    <></>
+                  )}
 
-                  {this.state.selectedDapp === "Create Rental" ? (
+                  {this.state.selectedPage === "Create Rental" ? (
                     <>
                       <CreateRental
                         isLoadingRentals={this.state.isLoadingRentals}
@@ -4100,13 +4422,13 @@ class App extends React.Component {
                         accountBalance={this.state.accountBalance}
                         isLoadingWallet={this.state.isLoadingWallet}
                         createRental={this.createRental}
-                        handleSelectedDapp={this.handleSelectedDapp}
+                        handleSelectedPage={this.handleSelectedPage}
                       />
                     </>
                   ) : (
                     <></>
                   )}
-                  {this.state.selectedDapp === "Selected Rental" ? (
+                  {this.state.selectedPage === "Selected Rental" ? (
                     <>
                       {/* DONT HANDLE THE LOGIN SEPARATED PARTS HERE DO THAT IN THE COMPONENT AND PASS THE **ISLOGINCOMPLETE** THROUGH PROPS */}
                       <YourSelectedRental
@@ -4130,7 +4452,7 @@ class App extends React.Component {
                         //
                         handleBlockConfirmModal={this.handleBlockConfirmModal}
                         //
-                        handleSelectedDapp={this.handleSelectedDapp}
+                        handleSelectedPage={this.handleSelectedPage}
                         //  this ^^^ send to rsrvs if have any
                         showModal={this.showModal}
                       />
@@ -4139,7 +4461,7 @@ class App extends React.Component {
                     <></>
                   )}
 
-                  {/* {this.state.selectedDapp === "Edit Rental" ? (
+                  {/* {this.state.selectedPage === "Edit Rental" ? (
                     <>
                       <EditRental
                         isLoadingRentals={this.state.isLoadingRentals}
@@ -4150,7 +4472,7 @@ class App extends React.Component {
                         accountBalance={this.state.accountBalance}
                         isLoadingWallet={this.state.isLoadingWallet}
                         editRental={this.editRental}
-                        handleSelectedDapp={this.handleSelectedDapp}
+                        handleSelectedPage={this.handleSelectedPage}
                       />
                     </>
                   ) : (
@@ -4163,7 +4485,7 @@ class App extends React.Component {
 
               {loggedInAs === "customer" ? (
                 <>
-                  {this.state.selectedDapp === "Rentals" ? (
+                  {this.state.selectedPage === "Rentals" ? (
                     <>
                       {/* DONT HANDLE THE LOGIN SEPARATED PARTS HERE DO THAT IN THE COMPONENT AND PASS THE **ISLOGINCOMPLETE** THROUGH PROPS */}
                       <RentalsPage
@@ -4172,7 +4494,7 @@ class App extends React.Component {
                         isLoadingRentals={this.state.isLoadingRentals}
                         identity={this.state.identity}
                         identityInfo={this.state.identityInfo}
-                        //handleSelectedDapp={this.handleSelectedDapp}
+                        //handleSelectedPage={this.handleSelectedPage}
 
                         handleSelectedRental={this.handleSelectedRental}
                         uniqueName={uniqueName}
@@ -4184,7 +4506,28 @@ class App extends React.Component {
                   ) : (
                     <></>
                   )}
-                  {this.state.selectedDapp === "Selected Rental" ? (
+                  {this.state.selectedPage === "About Us" ? (
+                    <>
+                      <AboutUsPageCustomer
+                        isLoadingAboutUs={this.state.isLoadingAboutUs}
+                        pullInitialTriggerABOUTUS={
+                          this.pullInitialTriggerABOUTUS
+                        }
+                        AboutUsDoc={this.state.AboutUsDoc}
+                        //identity={this.state.identity}
+                        //identityInfo={this.state.identityInfo}
+                        //uniqueName={uniqueName}
+                        mode={this.state.mode}
+                        //accountBalance={this.state.accountBalance}
+                        //isLoadingWallet={this.state.isLoadingWallet}
+                        //editCreateAboutUs={this.editCreateAboutUs}
+                        handleSelectedPage={this.handleSelectedPage}
+                      />
+                    </>
+                  ) : (
+                    <></>
+                  )}
+                  {this.state.selectedPage === "Selected Rental" ? (
                     <>
                       {/* DONT HANDLE THE LOGIN SEPARATED PARTS HERE DO THAT IN THE COMPONENT AND PASS THE **ISLOGINCOMPLETE** THROUGH PROPS */}
                       <SelectedRentalPage
@@ -4206,7 +4549,7 @@ class App extends React.Component {
                         //
                         handleMakeRequestModal={this.handleMakeRequestModal}
                         //
-                        handleSelectedDapp={this.handleSelectedDapp}
+                        handleSelectedPage={this.handleSelectedPage}
                         //  this ^^^ send to rsrvs if have any
                         showModal={this.showModal}
                       />
@@ -4214,7 +4557,7 @@ class App extends React.Component {
                   ) : (
                     <></>
                   )}
-                  {this.state.selectedDapp === "Requests" ? (
+                  {this.state.selectedPage === "Requests" ? (
                     <>
                       <YourRsrvsPage
                         whichNetwork={this.state.whichNetwork}
@@ -4471,7 +4814,24 @@ class App extends React.Component {
         ) : (
           <></>
         )}
-
+        {this.state.isModalShowing &&
+        this.state.presentModal === "AboutUsConfirmModal" ? (
+          <AboutUsConfirmModal
+            //accountBalance={this.state.accountBalance}
+            //isLoadingWallet={this.state.isLoadingWallet}
+            isModalShowing={this.state.isModalShowing}
+            hideModal={this.hideModal}
+            mode={this.state.mode}
+            AboutUsToSave={this.state.AboutUsToSave}
+            saveAboutUs={this.saveAboutUs}
+            // whichNetwork={this.state.whichNetwork}
+            // doTopUpIdentity={this.doTopUpIdentity}
+            // closeTopNav={this.closeTopNav}
+          />
+        ) : (
+          <></>
+        )}
+        {/* 
         {this.state.isModalShowing &&
         this.state.presentModal === "CustomerReplyModal" ? (
           <CustomerReplyModal
@@ -4500,7 +4860,7 @@ class App extends React.Component {
           />
         ) : (
           <></>
-        )}
+        )} */}
       </>
     );
   }

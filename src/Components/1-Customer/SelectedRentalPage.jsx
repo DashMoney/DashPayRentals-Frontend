@@ -151,7 +151,7 @@ class SelectedRentalPage extends React.Component {
   //   //console.log(this.state.departureDate);
   //   //Show Modal props ->
   //   //this.props.rental -> this is in selected state
-  //   this.props.handleSelectedDapp("Rentals");
+  //   this.props.handleSelectedPage("Rentals");
   // };
 
   //https://stackoverflow.com/questions/37620694/how-to-scroll-to-bottom-in-react
@@ -269,7 +269,7 @@ class SelectedRentalPage extends React.Component {
           <div className="cardTitle">
             <Button
               variant="primary"
-              onClick={() => this.props.handleSelectedDapp("Rentals")}
+              onClick={() => this.props.handleSelectedPage("Rentals")}
             >
               <IoMdArrowRoundBack size={28} />
             </Button>

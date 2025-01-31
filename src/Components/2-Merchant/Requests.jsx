@@ -75,7 +75,7 @@ class Requests extends React.Component {
               //
               DisplayRequests={this.props.DisplayRequests}
               handleSelectedYourRsrv={this.props.handleSelectedYourRsrv}
-              handleSelectedDapp={this.props.handleSelectedDapp}
+              handleSelectedPage={this.props.handleSelectedPage}
               handleSelectedRental={this.props.handleSelectedRental}
               isLoadingRentals={this.props.isLoadingRentals}
               isLoadingRequests={this.props.isLoadingRequests}
@@ -114,7 +114,7 @@ class Requests extends React.Component {
               //
               DisplayRequests={this.props.DisplayRequests}
               handleSelectedYourRsrv={this.props.handleSelectedYourRsrv}
-              handleSelectedDapp={this.props.handleSelectedDapp}
+              handleSelectedPage={this.props.handleSelectedPage}
               handleSelectedRental={this.props.handleSelectedRental}
               isLoadingRentals={this.props.isLoadingRentals}
               isLoadingRequests={this.props.isLoadingRequests}
@@ -150,7 +150,7 @@ class Requests extends React.Component {
 
               DisplayRequests={this.props.DisplayRequests}
               handleSelectedYourRsrv={this.props.handleSelectedYourRsrv}
-              handleSelectedDapp={this.props.handleSelectedDapp}
+              handleSelectedPage={this.props.handleSelectedPage}
               handleSelectedRental={this.props.handleSelectedRental}
               handleDeleteBlockConfirmModal={
                 this.props.handleDeleteBlockConfirmModal

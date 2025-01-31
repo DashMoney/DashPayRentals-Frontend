@@ -13,7 +13,7 @@ export default function dapiClientNoWallet(theNetwork) {
         contractId: "GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec",
       },
       RENTALSContract: {
-        contractId: "HjHocG4oyLHgpnRMJEGagaTyrx6HaboCiGdcBzY3RKPU",
+        contractId: "Czf3vDBKQZu8zNNsqTqVjxp2FoZEuhVfELULjkGV3S2B", //"HjHocG4oyLHgpnRMJEGagaTyrx6HaboCiGdcBzY3RKPU",
       },
       ProxyContract: {
         contractId: "7Y342Md8nmw5qFBwBCmpnrbqV9ELhgUfRdNpiLjYkzLD",

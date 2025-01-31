@@ -11,17 +11,20 @@
 \*These are the environmental variable that you need to create for operation:
 
 - VITE_FRONTEND_NAME = Rentals
+- VITE_MERCHANT_NAME= (Your Dash Name)
 - VITE_MERCHANT_IDENTITY = (This is your Dash IdentityID)
 - VITE_BKGD = primary
 - VITE_NETWORK = testnet
 
-_Frontend Name is what will appear in the top of page navigation bar._
+Frontend Name is what will appear in the top of page navigation bar.
 
-\_Merchant Identity can be found on your Account Login page
+Merchant Name is the Dash name associated with the Merchant Identity.
 
-_BKGD is 'Background' which can be dark or primary_
+Merchant Identity can be found on your Account Login page
 
-\_NETWORK can be testnet or mainnet
+BKGD is 'Background' which can be dark or primary
+
+NETWORK can be testnet or mainnet
 
 ### React + Vite (Everything else is from initial Vite setup)
 

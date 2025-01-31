@@ -24,7 +24,7 @@ class Rentals extends React.Component {
             identity={this.props.identity} //For if my review so can edit
             //uniqueName={this.props.uniqueName}
 
-            //handleSelectedDapp={this.props.handleSelectedDapp}
+            //handleSelectedPage={this.props.handleSelectedPage}
 
             handleSelectedRental={this.props.handleSelectedRental}
           />

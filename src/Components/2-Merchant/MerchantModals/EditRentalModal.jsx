@@ -555,16 +555,20 @@ class EditRentalModal extends React.Component {
                   Rental name is too long.
                 </Form.Control.Feedback>
               </Form.Group>
-
-              <div className="bodytext">
-                <ImgsComponent
-                  imgStateArray={this.state.imgStateArray}
-                  addFieldOfImg={this.addFieldOfImg}
-                  removeFieldOfImg={this.removeFieldOfImg}
-                  mode={this.props.mode}
-                />
-              </div>
-
+            </Form>
+            <div className="bodytext">
+              <ImgsComponent
+                imgStateArray={this.state.imgStateArray}
+                addFieldOfImg={this.addFieldOfImg}
+                removeFieldOfImg={this.removeFieldOfImg}
+                mode={this.props.mode}
+              />
+            </div>
+            <Form
+              noValidate
+              onSubmit={this.handleSubmitClick}
+              onChange={this.onChange}
+            >
               {/*  ADDRESS FORM BELOW */}
               <Form.Group className="mb-3" controlId="formAddress">
                 <h5 style={{ marginTop: ".2rem", marginBottom: ".2rem" }}>

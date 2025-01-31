@@ -164,7 +164,7 @@ class TopNav extends React.Component {
                   <>
                     {this.props.isLoginComplete ? (
                       <div
-                        onClick={() => this.props.handleSelectedDapp("Login")}
+                        onClick={() => this.props.handleSelectedPage("Login")}
                       >
                         <CreditsOnPage
                           identityInfo={this.props.identityInfo}
@@ -180,7 +180,7 @@ class TopNav extends React.Component {
                         <Button
                           variant="primary"
                           size="lg"
-                          onClick={() => this.props.handleSelectedDapp("Login")}
+                          onClick={() => this.props.handleSelectedPage("Login")}
                         >
                           <b>Complete Sign up</b>
                         </Button>
@@ -196,7 +196,7 @@ class TopNav extends React.Component {
                     <Button
                       variant="primary"
                       size="lg"
-                      onClick={() => this.props.handleSelectedDapp("Login")}
+                      onClick={() => this.props.handleSelectedPage("Login")}
                     >
                       <b>Login/Sign up</b>
                     </Button>
@@ -209,14 +209,21 @@ class TopNav extends React.Component {
                       <NavSelects
                         selection="Rentals"
                         selectionName="Your Rentals"
-                        selectedDapp={this.props.selectedDapp}
-                        handleSelectedDapp={this.props.handleSelectedDapp}
+                        selectedPage={this.props.selectedPage}
+                        handleSelectedPage={this.props.handleSelectedPage}
                       />
                       <NavSelects
                         selection="Requests"
                         selectionName="Requests"
-                        selectedDapp={this.props.selectedDapp}
-                        handleSelectedDapp={this.props.handleSelectedDapp}
+                        selectedPage={this.props.selectedPage}
+                        handleSelectedPage={this.props.handleSelectedPage}
+                      />
+                      <p></p>
+                      <NavSelects
+                        selection="About Us"
+                        selectionName="About Us"
+                        selectedPage={this.props.selectedPage}
+                        handleSelectedPage={this.props.handleSelectedPage}
                       />
                     </>
                   ) : (
@@ -229,15 +236,15 @@ class TopNav extends React.Component {
                       <NavSelects
                         selection="Rentals"
                         selectionName="View Rentals"
-                        selectedDapp={this.props.selectedDapp}
-                        handleSelectedDapp={this.props.handleSelectedDapp}
+                        selectedPage={this.props.selectedPage}
+                        handleSelectedPage={this.props.handleSelectedPage}
                       />
                       {this.props.isLoginComplete ? (
                         <NavSelects
                           selection="Requests"
                           selectionName="Your Reservations"
-                          selectedDapp={this.props.selectedDapp}
-                          handleSelectedDapp={this.props.handleSelectedDapp}
+                          selectedPage={this.props.selectedPage}
+                          handleSelectedPage={this.props.handleSelectedPage}
                         />
                       ) : (
                         <Nav.Link className="canvasLinkDisabled" disabled>
@@ -246,6 +253,13 @@ class TopNav extends React.Component {
                           </h5>
                         </Nav.Link>
                       )}
+                      <p></p>
+                      <NavSelects
+                        selection="About Us"
+                        selectionName="About Us"
+                        selectedPage={this.props.selectedPage}
+                        handleSelectedPage={this.props.handleSelectedPage}
+                      />
                     </>
                   ) : (
                     <></>
@@ -292,7 +306,7 @@ class TopNav extends React.Component {
                       <Button
                         variant="primary"
                         //size="lg"
-                        onClick={() => this.props.handleSelectedDapp("Login")}
+                        onClick={() => this.props.handleSelectedPage("Login")}
                       >
                         <b>Your Account</b>
                       </Button>

@@ -44,7 +44,7 @@ class ImgsComponent extends React.Component {
   };
 
   stringURLValidate = (stringURL) => {
-    let regex = /^\S.{1,448}\S$/;
+    let regex = /^\S{1,300}$/;
     let valid = regex.test(stringURL);
 
     if (valid) {
@@ -54,7 +54,7 @@ class ImgsComponent extends React.Component {
         validStringURL: true,
       });
     } else {
-      if (stringURL.length > 450) {
+      if (stringURL.length > 300) {
         this.setState({
           stringURLInput: stringURL,
           tooLongStringURLError: true,
@@ -71,7 +71,7 @@ class ImgsComponent extends React.Component {
 
   submitAndResetForm = () => {
     this.props.addFieldOfImg(this.state.stringURLInput);
-    //document.getElementById("formImgReset").reset();
+    document.getElementById("formImgReset").reset();
     this.setState({
       stringURLInput: "",
       validStringURL: false,
@@ -115,7 +115,7 @@ class ImgsComponent extends React.Component {
           </div>
         </Form> */}
 
-        <h4 style={{ textDecoration: "underline" }}>Images of Rentals</h4>
+        <h4 style={{ textDecoration: "underline" }}>Images of Rental</h4>
 
         {ImgArray}
 
@@ -140,36 +140,45 @@ class ImgsComponent extends React.Component {
           className="BottomBorder"
           style={{ paddingTop: ".2rem", marginBottom: ".3rem" }}
         ></div> */}
-        {/* <Form
-        id="formImgReset"
+        <Form
+          id="formImgReset"
           noValidate
           //onSubmit={this.handleSubmitClick}
-          onChange={this.onChange}
-        > */}
-        {/* URL FORM BELOW */}
-        <Form.Group
-          className="mb-3"
-          controlId="formStringURL"
-          onChange={this.onChange}
+          //onChange={this.onChange}
         >
-          {/* <h5 style={{ marginTop: ".2rem", marginBottom: ".2rem" }}>
+          {/* URL FORM BELOW */}
+          <Form.Group
+            className="mb-3"
+            controlId="formStringURL"
+            onChange={this.onChange}
+          >
+            {/* <h5 style={{ marginTop: ".2rem", marginBottom: ".2rem" }}>
             <b>Image</b>
           </h5> */}
-          <Form.Control
-            type="text"
-            placeholder="Enter image URL"
-            defaultValue={this.state.stringURLInput}
-            //required
-            isInvalid={this.state.tooLongURLError}
-            isValid={this.state.validURL}
-          />
-          <p></p>
-          <Form.Control.Feedback type="invalid">
-            URL is too long.
-          </Form.Control.Feedback>
-        </Form.Group>
-        {/* </Form> */}
-        {this.state.validStringURL ? (
+            <Form.Control
+              type="text"
+              placeholder="Enter image URL"
+              defaultValue={this.state.stringURLInput}
+              //required
+              isInvalid={this.state.tooLongStringURLError}
+              isValid={this.state.validURL}
+            />
+            <p></p>
+            <Form.Control.Feedback type="invalid">
+              URL is too long.
+            </Form.Control.Feedback>
+          </Form.Group>
+        </Form>
+
+        {this.props.imgStateArray.length >= 12 ? (
+          <>
+            <p className="textsmaller">(Limit of 12 images per rental)</p>
+          </>
+        ) : (
+          <></>
+        )}
+
+        {this.state.validStringURL && this.props.imgStateArray.length <= 11 ? (
           <>
             <div className="d-grid gap-2" style={{ marginTop: "1rem" }}>
               <Button
