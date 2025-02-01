@@ -2336,6 +2336,12 @@ class App extends React.Component {
               "base64"
             ).toJSON();
             // console.log("newConfirm:\n", returnedDoc);
+            //
+            //ACTUALLY FILTERED IN QUERY ABOVE HERE(MERCHANTFRONTEND)
+            //Filter so that only the merchant sent a confirm to the requester -> Can do the merchant side here bc its your(the Merchant) identity
+            // if (returnedDoc.$ownerId === this.state.identity) {
+            //   docArray = [...docArray, returnedDoc];
+            // }
             docArray = [...docArray, returnedDoc];
           }
           this.setState(
